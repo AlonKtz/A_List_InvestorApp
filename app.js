@@ -216,7 +216,7 @@ async function loadTrades() {
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_ID,
-      [Query.orderDesc('entry_time'), Query.limit(200)]
+      [Query.orderDesc('$createdAt'), Query.limit(200)]
     );
     allTrades = res.documents;
     const chrono = [...allTrades].sort((a, b) => new Date(a.$createdAt) - new Date(b.$createdAt));
