@@ -347,6 +347,7 @@ function renderTimeline(chrono, tagMap) {
 // ── T17–T18: Charts ──
 let sectorChart = null;
 let pnlChart    = null;
+let tagsChart   = null;
 
 function renderCharts(chrono) {
   // Sector bar chart
@@ -374,6 +375,30 @@ function renderCharts(chrono) {
     cum += parseFloat(t.exit_price) - parseFloat(t.entry_price);
     return parseFloat(cum.toFixed(2));
   });
+  // Behavioral breakdown pie chart
+  const tagOrder  = ['CLEAN', 'PANIC_EXIT', 'EUPHORIA_TRADE', 'REVENGE_TRADE', 'TUNNEL_VISION'];
+  const tagLabels = ['Clean', 'Panic Exit', 'Euphoria', 'Revenge', 'Tunnel Vision'];
+  const tagColors = ['#059669', '#ef4444', '#eab308', '#f97316', '#a855f7'];
+  const pieTagMap = buildTagMap(chrono);
+  const tagCounts = tagOrder.map(tag => chrono.filter(t => pieTagMap[t.$id] === tag).length);
+
+  if (tagsChart) tagsChart.destroy();
+  tagsChart = new Chart(document.getElementById('chart-tags'), {
+    type: 'pie',
+    data: {
+      labels: tagLabels,
+      datasets: [{ data: tagCounts, backgroundColor: tagColors, borderWidth: 0 }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#94a3b8', padding: 12, font: { size: 11 } }
+        }
+      }
+    }
+  });
+
   if (pnlChart) pnlChart.destroy();
   pnlChart = new Chart(document.getElementById('chart-pnl'), {
     type: 'line',

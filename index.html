@@ -135,7 +135,7 @@
       </div>
 
       <!-- Charts -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Trades by Sector</h2>
           <canvas id="chart-sector" height="220"></canvas>
@@ -143,6 +143,11 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Cumulative P&amp;L</h2>
           <canvas id="chart-pnl" height="220"></canvas>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Behavioral Breakdown</h2>
+          <p class="text-slate-600 text-xs mb-4">% of trades by tag</p>
+          <canvas id="chart-tags" height="220"></canvas>
         </div>
       </div>
 
