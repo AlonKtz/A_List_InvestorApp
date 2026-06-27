@@ -2,6 +2,10 @@
 
 A gamified trading journal that turns your trade history into a behavioral report card. Beginner traders lose on psychology (FOMO, panic exits, revenge trading) — not math. The A List exposes those patterns with sports-analytics-style stats.
 
+Links to meta-prompting with gemini pro and claude chat for this project first prompt:
+1- gemini: https://share.gemini.google/NcCfOQK0lGSL
+2- claude: https://claude.ai/share/c2b7af98-f704-47a2-88c4-ec274e3e48b1
+
 → [PRD](PRD.md) · [Build Tasks](tasks.md)
 
 ---
