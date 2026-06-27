@@ -75,7 +75,9 @@ formLogin.addEventListener('submit', async (e) => {
   const email    = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   const errEl    = document.getElementById('login-error');
+  const btn      = formLogin.querySelector('button[type="submit"]');
   errEl.classList.add('hidden');
+  btn.disabled = true; btn.textContent = 'Logging in…';
 
   try {
     await account.createEmailPasswordSession(email, password);
@@ -83,6 +85,7 @@ formLogin.addEventListener('submit', async (e) => {
   } catch (err) {
     errEl.textContent = err.message;
     errEl.classList.remove('hidden');
+    btn.disabled = false; btn.textContent = 'Log In';
   }
 });
 
@@ -92,7 +95,9 @@ formSignup.addEventListener('submit', async (e) => {
   const email    = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
   const errEl    = document.getElementById('signup-error');
+  const btn      = formSignup.querySelector('button[type="submit"]');
   errEl.classList.add('hidden');
+  btn.disabled = true; btn.textContent = 'Creating account…';
 
   try {
     await account.create(ID.unique(), email, password);
@@ -101,6 +106,7 @@ formSignup.addEventListener('submit', async (e) => {
   } catch (err) {
     errEl.textContent = err.message;
     errEl.classList.remove('hidden');
+    btn.disabled = false; btn.textContent = 'Create Account';
   }
 });
 
@@ -219,6 +225,14 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
 let allTrades = [];
 
 async function loadTrades() {
+  const loading = document.getElementById('dashboard-loading');
+  const error   = document.getElementById('dashboard-error');
+  const content = document.getElementById('dashboard-content');
+
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  content.classList.add('hidden');
+
   try {
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -232,8 +246,12 @@ async function loadTrades() {
     computeMetrics(chrono);
     renderTimeline(chrono, tagMap);
     renderCharts(chrono);
+    content.classList.remove('hidden');
   } catch (err) {
-    console.error('Failed to load trades:', err);
+    document.getElementById('dashboard-error-msg').textContent = err.message;
+    error.classList.remove('hidden');
+  } finally {
+    loading.classList.add('hidden');
   }
 }
 
