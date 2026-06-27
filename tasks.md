@@ -64,6 +64,11 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 - [ ] **T21** — Loading states: spinner or disabled button while async calls are in flight
 - [ ] **T22** — Final README update: confirm all setup steps are accurate, add known limits, verify no secrets committed
 
+## Phase 9 - Design
+
+- [ ] **T23** - inspiration: get a set of colors or a known website design to be similar to.
+- [ ] **T24** - system design: implement the design using claude design.
+
 ---
 
 ## Completion Gate

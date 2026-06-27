@@ -113,10 +113,10 @@ AList_App/
 
 ## Known Limits
 
-- Add-only trades — no edit or delete in this version
+- Add-only trades — the user can edit them and \ or delete in this version
 - Behavioral metrics require at least 4–5 trades to produce meaningful output
-- No real-time price data — all prices are manually entered
-- Not optimized for mobile (usable but not polished on small screens)
+- For real time data and stock prices we should use a CORS-proxied yahoo finance fetch or eal time mock price simoulator.
+- Optimized for mobile on the highest standart
 
 ---
 

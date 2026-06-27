@@ -41,7 +41,7 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 
 | ID | Story |
 |----|-------|
-| U01 | As a new user, I can sign up with email + password so I have a personal account. |
+| U01 | As a new user, I can sign up with email + password + 4 digits code (manual 2FA) so I have a personal account. |
 | U02 | As a returning user, I can log in and see only my own trades. |
 | U03 | As a logged-in user, I can log a trade (ticker, sector, prices, times) so it persists to the database. |
 | U04 | As a logged-in user, I can view all my past trades in a table, newest first. |
@@ -124,4 +124,4 @@ No UPDATE or DELETE policies — add-only is intentional for MVP.
 - [ ] A second user account cannot see the first user's trades (RLS verified manually)
 - [ ] No Supabase URL or anon key is committed to the repository
 - [ ] All tasks in `tasks.md` are checked off
-- [ ] Commit history shows one commit per task with a meaningful message
+- [ ] Commit history shows one commit per task or a group of specific related tasks with a meaningful message
