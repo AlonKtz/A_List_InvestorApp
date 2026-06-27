@@ -523,7 +523,7 @@ const CATEGORY_BADGE = {
 function renderTable(trades, tagMap = {}) {
   const tbody = document.getElementById('trades-table-body');
   if (!trades.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="py-10 text-center text-slate-600">No trades logged yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-center text-slate-600">No trades logged yet.</td></tr>';
     return;
   }
 
@@ -539,6 +539,7 @@ function renderTable(trades, tagMap = {}) {
     return `
       <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition-colors">
         <td class="py-3 pr-6 font-bold">${t.stock}</td>
+        <td class="py-3 pr-6 text-slate-400 text-sm">${date}</td>
         <td class="py-3 pr-6 text-slate-400 text-sm">${t.sector}</td>
         <td class="py-3 pr-6 text-slate-300">${t.quantity || 1}</td>
         <td class="py-3 pr-6">$${parseFloat(t.entry_price).toFixed(2)}</td>
