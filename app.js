@@ -1,4 +1,4 @@
-import { Client, Account, ID } from 'https://cdn.jsdelivr.net/npm/appwrite@17/dist/esm/sdk.mjs';
+import { Client, Account, ID } from 'https://cdn.jsdelivr.net/npm/appwrite/dist/esm/sdk.mjs';
 import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID } from './config.js';
 
 // ── Client ──
