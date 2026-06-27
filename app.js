@@ -7,36 +7,6 @@ function calcPnl(t) {
   return t.order_category === 'Short Sell' ? -diff * qty : diff * qty;
 }
 
-// ── Sector auto-detect map ──
-const SECTOR_MAP = {
-  // Technology
-  AAPL:'Technology', MSFT:'Technology', GOOGL:'Technology', GOOG:'Technology',
-  META:'Technology', NVDA:'Technology', AMZN:'Technology', TSLA:'Technology',
-  NFLX:'Technology', AMD:'Technology', INTC:'Technology', CRM:'Technology',
-  ADBE:'Technology', ORCL:'Technology', CSCO:'Technology', QCOM:'Technology',
-  UBER:'Technology', PYPL:'Technology', SHOP:'Technology', SQ:'Technology',
-  SNAP:'Technology', SPOT:'Technology', TWLO:'Technology', NET:'Technology',
-  // Finance
-  JPM:'Finance', BAC:'Finance', GS:'Finance', MS:'Finance', WFC:'Finance',
-  C:'Finance', BLK:'Finance', V:'Finance', MA:'Finance', AXP:'Finance', COF:'Finance',
-  // Healthcare
-  JNJ:'Healthcare', PFE:'Healthcare', MRNA:'Healthcare', UNH:'Healthcare',
-  CVS:'Healthcare', ABBV:'Healthcare', LLY:'Healthcare', MRK:'Healthcare',
-  BMY:'Healthcare', AMGN:'Healthcare', GILD:'Healthcare', ISRG:'Healthcare',
-  // Energy
-  XOM:'Energy', CVX:'Energy', COP:'Energy', SLB:'Energy', OXY:'Energy',
-  BP:'Energy', SHEL:'Energy', MPC:'Energy',
-  // Consumer
-  WMT:'Consumer', TGT:'Consumer', COST:'Consumer', HD:'Consumer', LOW:'Consumer',
-  MCD:'Consumer', SBUX:'Consumer', NKE:'Consumer', DIS:'Consumer',
-  KO:'Consumer', PEP:'Consumer', PG:'Consumer',
-  // Industrials
-  BA:'Industrials', CAT:'Industrials', GE:'Industrials', MMM:'Industrials',
-  HON:'Industrials', UPS:'Industrials', FDX:'Industrials', RTX:'Industrials',
-  // Real Estate
-  AMT:'Real Estate', PLD:'Real Estate', EQIX:'Real Estate', SPG:'Real Estate',
-};
-
 // ── Client ──
 const client = new Client()
   .setEndpoint(APPWRITE_ENDPOINT)
