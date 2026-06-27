@@ -170,6 +170,7 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
   const buyPrice = parseFloat(document.getElementById('trade-entry-price').value);
   const sellPrice= parseFloat(document.getElementById('trade-exit-price').value);
   const category = document.getElementById('trade-order-category').value;
+  const quantity = parseInt(document.getElementById('trade-quantity').value, 10);
   const date     = document.getElementById('trade-date').value;
 
   // Derive entry_time / exit_time from date + order category
@@ -186,7 +187,7 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
       APPWRITE_COLLECTION_ID,
       ID.unique(),
       { stock, sector, entry_price: buyPrice, exit_price: sellPrice,
-        entry_time: entryTime, exit_time: exitTime, order_category: category },
+        entry_time: entryTime, exit_time: exitTime, order_category: category, quantity },
       [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
     );
 
@@ -232,7 +233,7 @@ async function loadTrades() {
 // ── T12–T14: Behavioral metrics ──
 function computeMetrics(chrono) {
   const n = chrono.length;
-  const pnl = t => parseFloat(t.exit_price) - parseFloat(t.entry_price);
+  const pnl = t => (parseFloat(t.exit_price) - parseFloat(t.entry_price)) * (t.quantity || 1);
 
   // Panic Exit Rate — Day Trades that lost / all Day Trades
   const dayTrades   = chrono.filter(t => t.order_category === 'Day Trade');
@@ -300,7 +301,7 @@ const TAG_STYLE = {
 };
 
 function tagTrade(t, i, chrono) {
-  const pnl = x => parseFloat(x.exit_price) - parseFloat(x.entry_price);
+  const pnl = x => (parseFloat(x.exit_price) - parseFloat(x.entry_price)) * (x.quantity || 1);
   if (i >= 3 && chrono.slice(i - 3, i).every(x => x.sector === t.sector)) return 'TUNNEL_VISION';
   if (i > 0 && pnl(chrono[i - 1]) < 0) return 'REVENGE_TRADE';
   if (i > 0 && pnl(chrono[i - 1]) > 0 &&
@@ -325,7 +326,7 @@ function renderTimeline(chrono, tagMap) {
   chrono.forEach(t => {
     const tag    = tagMap[t.$id] || 'CLEAN';
     const style  = TAG_STYLE[tag];
-    const p      = parseFloat(t.exit_price) - parseFloat(t.entry_price);
+    const p      = (parseFloat(t.exit_price) - parseFloat(t.entry_price)) * (t.quantity || 1);
     const pSign  = p >= 0 ? '+' : '';
     const ring   = p >= 0 ? 'ring-emerald-400' : 'ring-red-400';
 
@@ -372,7 +373,7 @@ function renderCharts(chrono) {
   // Cumulative P&L line chart
   let cum = 0;
   const pnlPoints = chrono.map(t => {
-    cum += parseFloat(t.exit_price) - parseFloat(t.entry_price);
+    cum += (parseFloat(t.exit_price) - parseFloat(t.entry_price)) * (t.quantity || 1);
     return parseFloat(cum.toFixed(2));
   });
   // Behavioral breakdown pie chart
@@ -439,7 +440,7 @@ function renderTable(trades, tagMap = {}) {
   }
 
   tbody.innerHTML = trades.map(t => {
-    const pnl     = (t.exit_price - t.entry_price).toFixed(2);
+    const pnl     = ((t.exit_price - t.entry_price) * (t.quantity || 1)).toFixed(2);
     const pnlCls  = pnl >= 0 ? 'text-emerald-400' : 'text-red-400';
     const pnlSign = pnl >= 0 ? '+' : '';
     const catCls  = CATEGORY_BADGE[t.order_category] || 'bg-slate-800 text-slate-400';
@@ -451,6 +452,7 @@ function renderTable(trades, tagMap = {}) {
       <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition-colors">
         <td class="py-3 pr-6 font-bold">${t.stock}</td>
         <td class="py-3 pr-6 text-slate-400 text-sm">${t.sector}</td>
+        <td class="py-3 pr-6 text-slate-300">${t.quantity || 1}</td>
         <td class="py-3 pr-6">$${parseFloat(t.entry_price).toFixed(2)}</td>
         <td class="py-3 pr-6">$${parseFloat(t.exit_price).toFixed(2)}</td>
         <td class="py-3 pr-6 font-bold ${pnlCls}">${pnlSign}$${pnl}</td>

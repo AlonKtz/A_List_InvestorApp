@@ -160,6 +160,7 @@
               <tr class="text-left text-slate-500 border-b border-slate-800">
                 <th class="pb-3 pr-6 font-semibold">Stock</th>
                 <th class="pb-3 pr-6 font-semibold">Sector</th>
+                <th class="pb-3 pr-6 font-semibold">Qty</th>
                 <th class="pb-3 pr-6 font-semibold">Buy $</th>
                 <th class="pb-3 pr-6 font-semibold">Sell $</th>
                 <th class="pb-3 pr-6 font-semibold">P&amp;L</th>
@@ -200,8 +201,8 @@
             <input type="hidden" id="trade-sector">
           </div>
 
-          <!-- Buy / Sell price -->
-          <div class="grid grid-cols-2 gap-4">
+          <!-- Buy / Sell price + Quantity -->
+          <div class="grid grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Buy Price ($)</label>
               <input type="number" id="trade-entry-price" required step="0.01" min="0.01" placeholder="0.00"
@@ -210,6 +211,11 @@
             <div>
               <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Sell Price ($)</label>
               <input type="number" id="trade-exit-price" required step="0.01" min="0.01" placeholder="0.00"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Quantity</label>
+              <input type="number" id="trade-quantity" required min="1" step="1" placeholder="1"
                 class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
             </div>
           </div>
