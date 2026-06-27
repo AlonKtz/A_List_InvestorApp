@@ -152,10 +152,10 @@
               <tr class="text-left text-slate-500 border-b border-slate-800">
                 <th class="pb-3 pr-6 font-semibold">Stock</th>
                 <th class="pb-3 pr-6 font-semibold">Sector</th>
-                <th class="pb-3 pr-6 font-semibold">Entry $</th>
-                <th class="pb-3 pr-6 font-semibold">Exit $</th>
+                <th class="pb-3 pr-6 font-semibold">Buy $</th>
+                <th class="pb-3 pr-6 font-semibold">Sell $</th>
                 <th class="pb-3 pr-6 font-semibold">P&amp;L</th>
-                <th class="pb-3 pr-6 font-semibold">Hold</th>
+                <th class="pb-3 pr-6 font-semibold">Type</th>
                 <th class="pb-3 font-semibold">Tag</th>
               </tr>
             </thead>
@@ -176,51 +176,51 @@
         <h2 class="text-2xl font-black mb-6">Log a Trade</h2>
         <form id="form-trade" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
 
+          <!-- Ticker + auto sector -->
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Stock Ticker</label>
+            <div class="flex gap-3 items-center">
+              <input type="text" id="trade-stock" required placeholder="e.g. AAPL" maxlength="8"
+                class="w-36 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors uppercase font-bold tracking-widest">
+              <span class="text-slate-500 text-sm">→</span>
+              <span id="sector-badge"
+                class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-slate-400 text-sm">
+                Sector will auto-fill
+              </span>
+            </div>
+            <input type="hidden" id="trade-sector">
+          </div>
+
+          <!-- Buy / Sell price -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Stock Ticker</label>
-              <input type="text" id="trade-stock" required placeholder="e.g. AAPL"
-                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors uppercase">
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Buy Price ($)</label>
+              <input type="number" id="trade-entry-price" required step="0.01" min="0.01" placeholder="0.00"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Sector</label>
-              <select id="trade-sector" required
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Sell Price ($)</label>
+              <input type="number" id="trade-exit-price" required step="0.01" min="0.01" placeholder="0.00"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+            </div>
+          </div>
+
+          <!-- Order category + date -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Order Type</label>
+              <select id="trade-order-category" required
                 class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors">
-                <option value="">Select sector</option>
-                <option>Technology</option>
-                <option>Healthcare</option>
-                <option>Finance</option>
-                <option>Energy</option>
-                <option>Consumer</option>
-                <option>Industrials</option>
-                <option>Real Estate</option>
-                <option>Other</option>
+                <option value="">Select type</option>
+                <option value="Day Trade">Day Trade</option>
+                <option value="Swing Trade">Swing Trade</option>
+                <option value="Long Position">Long Position</option>
+                <option value="Short Sell">Short Sell</option>
               </select>
             </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Entry Price ($)</label>
-              <input type="number" id="trade-entry-price" required step="0.01" min="0" placeholder="0.00"
-                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Exit Price ($)</label>
-              <input type="number" id="trade-exit-price" required step="0.01" min="0" placeholder="0.00"
-                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Entry Time</label>
-              <input type="datetime-local" id="trade-entry-time" required
-                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Exit Time</label>
-              <input type="datetime-local" id="trade-exit-time" required
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Trade Date</label>
+              <input type="date" id="trade-date" required
                 class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors">
             </div>
           </div>
