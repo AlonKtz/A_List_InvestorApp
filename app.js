@@ -253,9 +253,34 @@ function renderTable(trades) {
         <td class="py-3 pr-6">$${parseFloat(t.exit_price).toFixed(2)}</td>
         <td class="py-3 pr-6 font-bold ${pnlCls}">${pnlSign}$${pnl}</td>
         <td class="py-3 pr-6"><span class="px-2 py-1 rounded-md text-xs font-semibold ${catCls}">${t.order_category || '—'}</span></td>
-        <td class="py-3 text-slate-500 text-xs">—</td>
+        <td class="py-3 pr-6 text-slate-500 text-xs">—</td>
+        <td class="py-3">
+          <button class="delete-btn text-slate-600 hover:text-red-400 transition-colors text-xs font-semibold px-2 py-1 rounded hover:bg-red-400/10"
+            data-id="${t.$id}">✕</button>
+        </td>
       </tr>`;
   }).join('');
 }
+
+// ── Delete trade ──
+document.getElementById('trades-table-body').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.delete-btn');
+  if (!btn) return;
+  if (!confirm('Delete this trade?')) return;
+
+  const id = btn.dataset.id;
+  btn.textContent = '…';
+  btn.disabled = true;
+
+  try {
+    await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID, id);
+    allTrades = allTrades.filter(t => t.$id !== id);
+    renderTable(allTrades);
+  } catch (err) {
+    alert('Could not delete: ' + err.message);
+    btn.textContent = '✕';
+    btn.disabled = false;
+  }
+});
 
 init();
