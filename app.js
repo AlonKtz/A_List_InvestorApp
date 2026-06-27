@@ -1,5 +1,4 @@
-import { Client, Account, ID } from 'https://cdn.jsdelivr.net/npm/appwrite/dist/esm/sdk.mjs';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID } from './config.js';
+const { Client, Account, ID } = Appwrite;
 
 // ── Client ──
 const client = new Client()
