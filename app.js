@@ -119,16 +119,61 @@ async function init() {
   }
 }
 
-// ── Sector auto-fill ──
+// ── Sector auto-fill (static map + Finnhub profile fallback) ──
+let _sectorDebounce = null;
+
 document.getElementById('trade-stock').addEventListener('input', (e) => {
   const ticker = e.target.value.trim().toUpperCase();
-  const sector = SECTOR_MAP[ticker] || 'Other';
   const badge  = document.getElementById('sector-badge');
   const hidden = document.getElementById('trade-sector');
-  badge.textContent = ticker ? sector : 'Sector will auto-fill';
-  badge.classList.toggle('filled', !!ticker);
-  hidden.value = sector;
   document.getElementById('price-info').textContent = '';
+
+  if (!ticker) {
+    badge.textContent = 'Sector will auto-fill';
+    badge.classList.remove('filled');
+    hidden.value = '';
+    return;
+  }
+
+  // Instant hit from static map
+  if (SECTOR_MAP[ticker]) {
+    badge.textContent = SECTOR_MAP[ticker];
+    badge.classList.add('filled');
+    hidden.value = SECTOR_MAP[ticker];
+    clearTimeout(_sectorDebounce);
+    return;
+  }
+
+  // Unknown — show pending state, then ask Finnhub after 600ms pause
+  badge.textContent = 'Looking up…';
+  badge.classList.remove('filled');
+  hidden.value = 'Other';
+
+  clearTimeout(_sectorDebounce);
+  _sectorDebounce = setTimeout(async () => {
+    // Re-check in case user kept typing
+    const current = document.getElementById('trade-stock').value.trim().toUpperCase();
+    if (current !== ticker) return;
+    try {
+      const res  = await fetch(
+        `https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${FINNHUB_API_KEY}`
+      );
+      const data = await res.json();
+      const sector = data.finnhubIndustry || null;
+      if (sector) {
+        SECTOR_MAP[ticker] = sector; // cache for session
+        badge.textContent = sector;
+        badge.classList.add('filled');
+        hidden.value = sector;
+      } else {
+        badge.textContent = 'Unknown ticker';
+        hidden.value = 'Other';
+      }
+    } catch {
+      badge.textContent = 'Other';
+      hidden.value = 'Other';
+    }
+  }, 600);
 });
 
 // ── Finnhub: fetch current price ──
