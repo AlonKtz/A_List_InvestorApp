@@ -35,53 +35,48 @@ python -m http.server 8080
 
 ---
 
-## Supabase Setup
+## Appwrite Setup
 
-### 1. Create a Supabase project
+### 1. Create an Appwrite Cloud account
 
-Go to [supabase.com](https://supabase.com), create a new project, and note your **Project URL** and **anon public key** from Project Settings → API.
+Go to [cloud.appwrite.io](https://cloud.appwrite.io) and create a free account. The free tier supports 10 projects.
 
-### 2. Disable email confirmation
+### 2. Create a project
 
-In your Supabase dashboard: **Authentication → Providers → Email** → turn off **"Confirm email"**. This allows sign-up to immediately create an active session without requiring an email confirmation link.
+In the Appwrite console, click **Create Project** and give it a name (e.g. `AList`). Note your **Project ID** from the project settings page.
 
-### 3. Create the `trades` table
+### 3. Add a Web platform
 
-Run the following in **SQL Editor** in your Supabase dashboard:
+In your project: **Overview → Add a platform → Web**. Set the hostname to `localhost` for local development (add your production domain later if deploying).
 
-```sql
-create table trades (
-  id          uuid        default gen_random_uuid() primary key,
-  user_id     uuid        references auth.users(id) on delete cascade not null,
-  stock       text        not null,
-  sector      text        not null,
-  entry_price numeric(12, 4) not null,
-  exit_price  numeric(12, 4) not null,
-  entry_time  timestamptz not null,
-  exit_time   timestamptz not null,
-  created_at  timestamptz default now()
-);
-```
+### 4. Create a Database
 
-### 4. Enable Row Level Security
+Go to **Databases → Create Database**. Name it anything (e.g. `alist_db`). Note the **Database ID**.
 
-Run this in the SQL Editor (same session is fine):
+### 5. Create the `trades` Collection
 
-```sql
-alter table trades enable row level security;
+Inside the database, click **Create Collection** and name it `trades`. Note the **Collection ID**.
 
-create policy "select_own_trades"
-  on trades for select
-  using (auth.uid() = user_id);
+Then add the following **Attributes**:
 
-create policy "insert_own_trades"
-  on trades for insert
-  with check (auth.uid() = user_id);
-```
+| Key | Type | Size | Required |
+|-----|------|------|----------|
+| `stock` | String | 50 | Yes |
+| `sector` | String | 50 | Yes |
+| `entry_price` | Float | — | Yes |
+| `exit_price` | Float | — | Yes |
+| `entry_time` | String | 30 | Yes |
+| `exit_time` | String | 30 | Yes |
 
-This ensures every user can only read and write their own rows. No cross-user data leakage.
+### 6. Set Collection Permissions
 
-### 5. Configure your keys
+In the collection's **Settings → Permissions** tab, add a role:
+
+- Role: **Users** → check **Create**
+
+This allows any authenticated user to create documents. Read/update/delete permissions are set **per document** at insert time (scoped to the document owner's user ID), so no other user can access another user's trades.
+
+### 7. Configure your keys
 
 Copy `config.example.js` to `config.js` and fill in your values:
 
@@ -92,11 +87,13 @@ cp config.example.js config.js
 Edit `config.js`:
 
 ```js
-export const SUPABASE_URL = 'https://your-project-id.supabase.co';
-export const SUPABASE_ANON_KEY = 'your-anon-public-key-here';
+export const APPWRITE_ENDPOINT   = 'https://cloud.appwrite.io/v1';
+export const APPWRITE_PROJECT_ID = 'your-project-id';
+export const APPWRITE_DATABASE_ID   = 'your-database-id';
+export const APPWRITE_COLLECTION_ID = 'your-collection-id';
 ```
 
-`config.js` is listed in `.gitignore` and will never be committed. Only `config.example.js` (with placeholder values) is tracked.
+`config.js` is gitignored and will never be committed. Only `config.example.js` (with placeholder values) is tracked.
 
 ---
 
@@ -126,4 +123,4 @@ AList_App/
 
 ## Stack
 
-HTML5 · Tailwind CSS (CDN) · Vanilla JS (ES modules) · Chart.js (CDN) · Supabase (Postgres + Auth)
+HTML5 · Tailwind CSS (CDN) · Vanilla JS (ES modules) · Chart.js (CDN) · Appwrite Cloud (Database + Auth)

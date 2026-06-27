@@ -59,58 +59,61 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 | UI | HTML5 + Tailwind CSS (CDN) | No build step; rapid styling |
 | Logic | Vanilla JS (ES modules) | No framework overhead; fits the no-bundler constraint |
 | Charts | Chart.js (CDN) | Simple, well-documented, enough for bar + line |
-| Backend / DB | Supabase (Postgres + Auth) | Real accounts, RLS, hosted — no backend code to write |
-| Supabase client | ESM CDN (`esm.sh/@supabase/supabase-js@2`) | No npm; works in browser directly |
-| Config | `config.js` with exported constants | Keeps keys out of committed HTML; documented in README |
+| Backend / DB | Appwrite Cloud (Database + Auth) | Real accounts, document permissions, hosted — no backend code to write |
+| Appwrite client | ESM CDN (`cdn.jsdelivr.net/npm/appwrite/dist/esm/sdk.mjs`) | No npm; works in browser directly |
+| Config | `config.js` with exported constants | Keeps project IDs out of committed HTML; documented in README |
 
 ---
 
 ## Data Model
 
-### `trades` table
+### Appwrite Collection: `trades`
 
-```sql
-create table trades (
-  id          uuid        default gen_random_uuid() primary key,
-  user_id     uuid        references auth.users(id) on delete cascade not null,
-  stock       text        not null,
-  sector      text        not null,
-  entry_price numeric(12, 4) not null,
-  exit_price  numeric(12, 4) not null,
-  entry_time  timestamptz not null,
-  exit_time   timestamptz not null,
-  created_at  timestamptz default now()
-);
-```
+Created in the Appwrite dashboard under a Database. No SQL DDL — attributes are defined per-field in the UI or via the Appwrite console.
+
+| Attribute | Type | Required |
+|-----------|------|----------|
+| `stock` | String (50) | Yes |
+| `sector` | String (50) | Yes |
+| `entry_price` | Float | Yes |
+| `exit_price` | Float | Yes |
+| `entry_time` | String (ISO 8601) | Yes |
+| `exit_time` | String (ISO 8601) | Yes |
+
+**Auto-provided by Appwrite (no manual setup):**
+- `$id` — unique document ID
+- `$createdAt` — creation timestamp
+- `$permissions` — document-level access control
 
 **Derived fields (computed in JS, not stored):**
 - `p_and_l = exit_price − entry_price`
-- `hold_minutes = (exit_time − entry_time) / 60000`
+- `hold_minutes = (new Date(exit_time) − new Date(entry_time)) / 60000`
 - `behavioral_tag` — assigned per trade at render time using the autopsy logic
 
 **Sectors (dropdown options):** Technology · Healthcare · Finance · Energy · Consumer · Industrials · Real Estate · Other
 
 ---
 
-## RLS Model
+## Permission Model
 
-Row Level Security is **ON** for the `trades` table. Users can only read and write their own rows.
+Appwrite uses **document-level permissions** instead of table-level RLS. When a trade is inserted, it is created with permissions scoped to the authenticated user's ID:
 
-```sql
-alter table trades enable row level security;
+```js
+import { Permission, Role } from '...appwrite sdk...';
 
--- SELECT: users see only their own trades
-create policy "select_own_trades"
-  on trades for select
-  using (auth.uid() = user_id);
-
--- INSERT: users can only insert rows where user_id matches their session
-create policy "insert_own_trades"
-  on trades for insert
-  with check (auth.uid() = user_id);
+databases.createDocument(
+  DATABASE_ID,
+  COLLECTION_ID,
+  ID.unique(),
+  tradeData,
+  [
+    Permission.read(Role.user(userId)),
+    Permission.write(Role.user(userId))
+  ]
+);
 ```
 
-No UPDATE or DELETE policies — add-only is intentional for MVP.
+This means Appwrite enforces access at the document level — a user querying the collection only receives documents they own. No cross-user reads or writes are possible without an explicit permission grant.
 
 ---
 

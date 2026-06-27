@@ -12,10 +12,10 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 
 ---
 
-## Phase 2 — Supabase Setup
+## Phase 2 — Appwrite Setup
 
-- [ ] **T04** — Create `trades` table in Supabase + enable RLS + apply both policies (SQL in README)
-- [ ] **T05** — Create `config.js` with Supabase URL + anon key exports (gitignored); add `config.example.js` as the committed template
+- [ ] **T04** — Create Appwrite project + database + `trades` collection with all attributes + set collection permissions (documented in README)
+- [ ] **T05** — Create `config.js` with Appwrite endpoint, project ID, database ID, collection ID exports (gitignored); add `config.example.js` as the committed template
 
 ---
 
