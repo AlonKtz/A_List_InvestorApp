@@ -1,5 +1,12 @@
 const { Client, Account, Databases, ID, Query, Permission, Role } = Appwrite;
 
+// P&L accounts for direction: Short Sell profits when price falls
+function calcPnl(t) {
+  const diff = parseFloat(t.exit_price) - parseFloat(t.entry_price);
+  const qty  = t.quantity || 1;
+  return t.order_category === 'Short Sell' ? -diff * qty : diff * qty;
+}
+
 // ── Sector auto-detect map ──
 const SECTOR_MAP = {
   // Technology
@@ -233,7 +240,7 @@ async function loadTrades() {
 // ── T12–T14: Behavioral metrics ──
 function computeMetrics(chrono) {
   const n = chrono.length;
-  const pnl = t => (parseFloat(t.exit_price) - parseFloat(t.entry_price)) * (t.quantity || 1);
+  const pnl = t => calcPnl(t);
 
   // Panic Exit Rate — Day Trades that lost / all Day Trades
   const dayTrades   = chrono.filter(t => t.order_category === 'Day Trade');
@@ -301,7 +308,7 @@ const TAG_STYLE = {
 };
 
 function tagTrade(t, i, chrono) {
-  const pnl = x => (parseFloat(x.exit_price) - parseFloat(x.entry_price)) * (x.quantity || 1);
+  const pnl = x => calcPnl(x);
   if (i >= 3 && chrono.slice(i - 3, i).every(x => x.sector === t.sector)) return 'TUNNEL_VISION';
   if (i > 0 && pnl(chrono[i - 1]) < 0) return 'REVENGE_TRADE';
   if (i > 0 && pnl(chrono[i - 1]) > 0 &&
@@ -326,7 +333,7 @@ function renderTimeline(chrono, tagMap) {
   chrono.forEach(t => {
     const tag    = tagMap[t.$id] || 'CLEAN';
     const style  = TAG_STYLE[tag];
-    const p      = (parseFloat(t.exit_price) - parseFloat(t.entry_price)) * (t.quantity || 1);
+    const p      = calcPnl(t);
     const pSign  = p >= 0 ? '+' : '';
     const ring   = p >= 0 ? 'ring-emerald-400' : 'ring-red-400';
 
@@ -373,7 +380,7 @@ function renderCharts(chrono) {
   // Cumulative P&L line chart
   let cum = 0;
   const pnlPoints = chrono.map(t => {
-    cum += (parseFloat(t.exit_price) - parseFloat(t.entry_price)) * (t.quantity || 1);
+    cum += calcPnl(t);
     return parseFloat(cum.toFixed(2));
   });
   // Behavioral breakdown pie chart
@@ -440,7 +447,7 @@ function renderTable(trades, tagMap = {}) {
   }
 
   tbody.innerHTML = trades.map(t => {
-    const pnl     = ((t.exit_price - t.entry_price) * (t.quantity || 1)).toFixed(2);
+    const pnl     = calcPnl(t).toFixed(2);
     const pnlCls  = pnl >= 0 ? 'text-emerald-400' : 'text-red-400';
     const pnlSign = pnl >= 0 ? '+' : '';
     const catCls  = CATEGORY_BADGE[t.order_category] || 'bg-slate-800 text-slate-400';
