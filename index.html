@@ -100,8 +100,9 @@
 
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Composure Rating</p>
+          <p class="text-slate-500 text-xs mt-1 mb-2">Tracks your <span class="text-slate-300">Day Trades</span> only. High score = you hold your nerve. Low score = you bail the moment a trade goes red.</p>
           <p id="stat-panic" class="text-5xl font-black mt-2">—</p>
-          <p class="text-xs text-slate-500 mt-2">% of fast exits that lost money</p>
+          <p class="text-xs text-slate-500 mt-2">out of 100 — higher is better</p>
           <div class="mt-3 h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div id="stat-panic-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-700" style="width:0%"></div>
           </div>
@@ -109,15 +110,17 @@
 
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">FOMO Tax</p>
+          <p class="text-slate-500 text-xs mt-1 mb-2">Total dollars lost on trades you entered the <span class="text-slate-300">same day as a prior win</span>. Measures how much chasing the high costs you.</p>
           <p id="stat-fomo" class="text-5xl font-black mt-2">—</p>
-          <p class="text-xs text-slate-500 mt-2">Lost chasing prior winners</p>
+          <p class="text-xs text-slate-500 mt-2">total lost chasing prior winners</p>
           <p id="stat-fomo-sub" class="text-xs text-slate-600 mt-1"></p>
         </div>
 
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Tilt Multiplier</p>
+          <p class="text-slate-500 text-xs mt-1 mb-2">Compares your average loss <span class="text-slate-300">after a prior loss</span> vs your normal average. Above <span class="text-slate-300">1.2×</span> means you bet bigger when on tilt.</p>
           <p id="stat-tilt" class="text-5xl font-black mt-2">—</p>
-          <p class="text-xs text-slate-500 mt-2">Loss size after a loss vs your average</p>
+          <p class="text-xs text-slate-500 mt-2">1.0× = no tilt · above 1.2× = danger</p>
           <p id="stat-tilt-sub" class="text-xs text-slate-600 mt-1"></p>
         </div>
 
