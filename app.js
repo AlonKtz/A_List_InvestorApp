@@ -288,7 +288,8 @@ async function loadTrades() {
     const tagMap = buildTagMap(chrono);
     renderTable(allTrades, tagMap);
     computeMetrics(chrono);
-    renderTimeline(chrono, tagMap);
+    renderBestWorst(chrono);
+    renderRecentTrades(chrono, tagMap);
     renderTopSectors(chrono);
     renderCharts(chrono);
     content.classList.remove('hidden');
@@ -395,34 +396,72 @@ function buildTagMap(chrono) {
   return map;
 }
 
-// ── Timeline ──
-function renderTimeline(chrono, tagMap) {
-  const container = document.getElementById('timeline');
-  const empty     = document.getElementById('timeline-empty');
-  container.querySelectorAll('.trade-dot').forEach(el => el.remove());
-  if (!chrono.length) { empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
+// ── Best & Worst Trade ──
+function renderBestWorst(chrono) {
+  const el = document.getElementById('best-worst');
+  if (!chrono.length) {
+    el.innerHTML = '<p style="color:var(--text-faint);font-size:14px">No trades yet.</p>';
+    return;
+  }
 
-  chrono.forEach((t, i) => {
-    const tag  = tagMap[t.$id] || 'CLEAN';
-    const meta = TAG_META[tag];
-    const p    = calcPnl(t);
-    const pSign = p >= 0 ? '+' : '';
-    const ring  = p >= 0 ? 'ring-gain' : 'ring-loss';
-
-    const dot = document.createElement('div');
-    dot.className = 'trade-dot';
-    dot.innerHTML = `
-      <div class="trade-dot-inner ${ring}" style="background:${meta.color};animation-delay:${i * 55}ms">
-        ${t.stock.slice(0, 4)}
-      </div>
-      <div class="trade-dot-tooltip">
-        <p style="font-weight:700;color:var(--text-primary);margin:0">${t.stock}</p>
-        <p style="color:${p >= 0 ? 'var(--gain)' : 'var(--loss)'};margin:2px 0">${pSign}$${Math.abs(p).toFixed(2)}</p>
-        <p style="color:var(--text-secondary);font-weight:600;margin:0">${meta.label}</p>
-      </div>`;
-    container.appendChild(dot);
+  let best = chrono[0], worst = chrono[0];
+  chrono.forEach(t => {
+    if (calcPnl(t) > calcPnl(best))  best  = t;
+    if (calcPnl(t) < calcPnl(worst)) worst = t;
   });
+
+  const bp = calcPnl(best),  wp = calcPnl(worst);
+  const bd = best.entry_time  ? best.entry_time.slice(0, 10)  : '—';
+  const wd = worst.entry_time ? worst.entry_time.slice(0, 10) : '—';
+
+  const row = (emoji, ticker, pnl, color, sign, date) => `
+    <div class="glass-card-nested" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">${emoji}</span>
+        <div>
+          <p style="font-weight:900;font-size:18px;margin:0;letter-spacing:-0.02em">${ticker}</p>
+          <p style="color:var(--text-faint);font-size:11px;margin:2px 0 0">${date}</p>
+        </div>
+      </div>
+      <span style="font-weight:900;font-size:20px;color:${color};letter-spacing:-0.02em">${sign}$${Math.abs(pnl).toFixed(2)}</span>
+    </div>`;
+
+  el.innerHTML =
+    row('🏆', best.stock,  bp, 'var(--gain)', '+', bd) +
+    row('💀', worst.stock, wp, 'var(--loss)', '-', wd);
+}
+
+// ── Recent 3 Trades ──
+function renderRecentTrades(chrono, tagMap) {
+  const el = document.getElementById('recent-trades');
+  if (!chrono.length) {
+    el.innerHTML = '<p style="color:var(--text-faint);font-size:14px">No trades yet.</p>';
+    return;
+  }
+
+  const recent = [...chrono].slice(-3).reverse();
+
+  el.innerHTML = recent.map((t, i) => {
+    const p       = calcPnl(t);
+    const pSign   = p >= 0 ? '+' : '-';
+    const pColor  = p >= 0 ? 'var(--gain)' : 'var(--loss)';
+    const tag     = tagMap[t.$id];
+    const tagMeta = TAG_META[tag];
+    const date    = t.entry_time ? t.entry_time.slice(0, 10) : '—';
+    const border  = i < recent.length - 1 ? 'border-bottom:1px solid var(--glass-border);' : '';
+
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;${border}">
+        <div>
+          <span style="font-weight:800;font-size:15px;color:var(--text-primary)">${t.stock}</span>
+          <span style="color:var(--text-faint);font-size:11px;margin-left:7px">${date}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-weight:700;color:${pColor}">${pSign}$${Math.abs(p).toFixed(2)}</span>
+          ${tagMeta ? `<span class="tag-badge ${tagMeta.cls}">${tagMeta.label}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ── Top Sectors ──
@@ -588,7 +627,8 @@ document.getElementById('trades-table-body').addEventListener('click', async (e)
     const tagMap = buildTagMap(chrono);
     renderTable(allTrades, tagMap);
     computeMetrics(chrono);
-    renderTimeline(chrono, tagMap);
+    renderBestWorst(chrono);
+    renderRecentTrades(chrono, tagMap);
     renderTopSectors(chrono);
     renderCharts(chrono);
   } catch (err) {

@@ -128,17 +128,27 @@
 
         </div>
 
-        <!-- Trade Autopsy + Top Sectors -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Best/Worst Trade | Recent Trades | Top Sectors -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
+          <!-- Biggest Gain & Loss -->
           <div class="glass-card p-6" style="animation-delay:60ms">
-            <p class="eyebrow">Trade Autopsy</p>
-            <div id="timeline" class="flex flex-wrap gap-3" style="align-content:flex-start;min-height:140px;padding-bottom:4px">
-              <p id="timeline-empty" style="color:var(--text-faint);font-size:14px;align-self:center">No trades yet — log your first trade to see the timeline.</p>
+            <p class="eyebrow">Best &amp; Worst Trade</p>
+            <div id="best-worst">
+              <p style="color:var(--text-faint);font-size:14px">No trades yet.</p>
             </div>
           </div>
 
-          <div class="glass-card p-6" style="animation-delay:140ms">
+          <!-- Latest 3 Trades -->
+          <div class="glass-card p-6" style="animation-delay:120ms">
+            <p class="eyebrow">Recent Trades</p>
+            <div id="recent-trades">
+              <p style="color:var(--text-faint);font-size:14px">No trades yet.</p>
+            </div>
+          </div>
+
+          <!-- Top Sectors -->
+          <div class="glass-card p-6" style="animation-delay:180ms">
             <p class="eyebrow" style="margin-bottom:4px">Top Sectors</p>
             <p style="color:var(--text-faint);font-size:12px;margin:0 0 16px">Your 2 most profitable trading areas</p>
             <div id="top-sectors" class="space-y-3">
