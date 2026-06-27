@@ -137,6 +137,47 @@ document.getElementById('trade-stock').addEventListener('input', (e) => {
   badge.classList.toggle('text-emerald-400', !!ticker);
   badge.classList.toggle('text-slate-400',   !ticker);
   hidden.value = sector;
+  document.getElementById('price-info').textContent = '';
+});
+
+// ── Finnhub: fetch current price ──
+document.getElementById('btn-fetch-price').addEventListener('click', async () => {
+  const ticker  = document.getElementById('trade-stock').value.trim().toUpperCase();
+  const infoEl  = document.getElementById('price-info');
+  const btn     = document.getElementById('btn-fetch-price');
+  if (!ticker) { infoEl.textContent = 'Enter a ticker first.'; return; }
+
+  btn.disabled = true;
+  infoEl.textContent = 'Fetching…';
+
+  try {
+    const res  = await fetch(
+      `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`
+    );
+    const data = await res.json();
+
+    if (!data.c || data.c === 0) {
+      infoEl.textContent = `Unknown ticker: ${ticker}`;
+      return;
+    }
+
+    // Fill buy price
+    document.getElementById('trade-entry-price').value = data.c.toFixed(2);
+
+    // Show info: price, change%, timestamp in Jerusalem time
+    const sign  = data.d >= 0 ? '+' : '';
+    const ts    = data.t
+      ? new Date(data.t * 1000).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour12: false })
+      : '';
+    infoEl.innerHTML =
+      `<span class="text-white font-bold">$${data.c.toFixed(2)}</span>` +
+      `<span class="${data.d >= 0 ? 'text-emerald-400' : 'text-red-400'} ml-2">${sign}${data.dp.toFixed(2)}%</span>` +
+      (ts ? `<span class="text-slate-600 ml-2">${ts} IL</span>` : '');
+  } catch (err) {
+    infoEl.textContent = 'Price fetch failed.';
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 // ── T10: Insert trade ──
