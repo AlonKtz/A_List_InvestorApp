@@ -16,27 +16,23 @@ const account   = new Account(client);
 const databases = new Databases(client);
 
 // ── Auth tab toggle ──
-const tabLogin  = document.getElementById('tab-login');
-const tabSignup = document.getElementById('tab-signup');
+const tabLogin   = document.getElementById('tab-login');
+const tabSignup  = document.getElementById('tab-signup');
 const formLogin  = document.getElementById('form-login');
 const formSignup = document.getElementById('form-signup');
 
 tabLogin.addEventListener('click', () => {
   formLogin.classList.remove('hidden');
   formSignup.classList.add('hidden');
-  tabLogin.classList.add('bg-emerald-500', 'text-white');
-  tabLogin.classList.remove('text-slate-400');
-  tabSignup.classList.remove('bg-emerald-500', 'text-white');
-  tabSignup.classList.add('text-slate-400');
+  tabLogin.classList.add('active');
+  tabSignup.classList.remove('active');
 });
 
 tabSignup.addEventListener('click', () => {
   formSignup.classList.remove('hidden');
   formLogin.classList.add('hidden');
-  tabSignup.classList.add('bg-emerald-500', 'text-white');
-  tabSignup.classList.remove('text-slate-400');
-  tabLogin.classList.remove('bg-emerald-500', 'text-white');
-  tabLogin.classList.add('text-slate-400');
+  tabSignup.classList.add('active');
+  tabLogin.classList.remove('active');
 });
 
 // ── Login ──
@@ -87,27 +83,23 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 });
 
 // ── Nav tab switching ──
-const navDashboard = document.getElementById('nav-dashboard');
-const navLog       = document.getElementById('nav-log');
+const navDashboard  = document.getElementById('nav-dashboard');
+const navLog        = document.getElementById('nav-log');
 const viewDashboard = document.getElementById('view-dashboard');
 const viewLog       = document.getElementById('view-log');
 
 navDashboard.addEventListener('click', () => {
   viewDashboard.classList.remove('hidden');
   viewLog.classList.add('hidden');
-  navDashboard.classList.add('bg-emerald-500', 'text-white');
-  navDashboard.classList.remove('text-slate-400');
-  navLog.classList.remove('bg-emerald-500', 'text-white');
-  navLog.classList.add('text-slate-400');
+  navDashboard.classList.add('active');    navDashboard.classList.remove('inactive');
+  navLog.classList.remove('active');       navLog.classList.add('inactive');
 });
 
 navLog.addEventListener('click', () => {
   viewLog.classList.remove('hidden');
   viewDashboard.classList.add('hidden');
-  navLog.classList.add('bg-emerald-500', 'text-white');
-  navLog.classList.remove('text-slate-400');
-  navDashboard.classList.remove('bg-emerald-500', 'text-white');
-  navDashboard.classList.add('text-slate-400');
+  navLog.classList.add('active');          navLog.classList.remove('inactive');
+  navDashboard.classList.remove('active'); navDashboard.classList.add('inactive');
 });
 
 // ── Show / hide screens ──
@@ -127,24 +119,23 @@ async function init() {
   }
 }
 
-// ── Sector auto-fill on ticker input ──
+// ── Sector auto-fill ──
 document.getElementById('trade-stock').addEventListener('input', (e) => {
-  const ticker  = e.target.value.trim().toUpperCase();
-  const sector  = SECTOR_MAP[ticker] || 'Other';
-  const badge   = document.getElementById('sector-badge');
-  const hidden  = document.getElementById('trade-sector');
+  const ticker = e.target.value.trim().toUpperCase();
+  const sector = SECTOR_MAP[ticker] || 'Other';
+  const badge  = document.getElementById('sector-badge');
+  const hidden = document.getElementById('trade-sector');
   badge.textContent = ticker ? sector : 'Sector will auto-fill';
-  badge.classList.toggle('text-emerald-400', !!ticker);
-  badge.classList.toggle('text-slate-400',   !ticker);
+  badge.classList.toggle('filled', !!ticker);
   hidden.value = sector;
   document.getElementById('price-info').textContent = '';
 });
 
 // ── Finnhub: fetch current price ──
 document.getElementById('btn-fetch-price').addEventListener('click', async () => {
-  const ticker  = document.getElementById('trade-stock').value.trim().toUpperCase();
-  const infoEl  = document.getElementById('price-info');
-  const btn     = document.getElementById('btn-fetch-price');
+  const ticker = document.getElementById('trade-stock').value.trim().toUpperCase();
+  const infoEl = document.getElementById('price-info');
+  const btn    = document.getElementById('btn-fetch-price');
   if (!ticker) { infoEl.textContent = 'Enter a ticker first.'; return; }
 
   btn.disabled = true;
@@ -161,26 +152,24 @@ document.getElementById('btn-fetch-price').addEventListener('click', async () =>
       return;
     }
 
-    // Fill buy price
     document.getElementById('trade-entry-price').value = data.c.toFixed(2);
 
-    // Show info: price, change%, timestamp in Jerusalem time
-    const sign  = data.d >= 0 ? '+' : '';
-    const ts    = data.t
+    const sign = data.d >= 0 ? '+' : '';
+    const ts   = data.t
       ? new Date(data.t * 1000).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour12: false })
       : '';
     infoEl.innerHTML =
-      `<span class="text-white font-bold">$${data.c.toFixed(2)}</span>` +
-      `<span class="${data.d >= 0 ? 'text-emerald-400' : 'text-red-400'} ml-2">${sign}${data.dp.toFixed(2)}%</span>` +
-      (ts ? `<span class="text-slate-600 ml-2">${ts} IL</span>` : '');
-  } catch (err) {
+      `<span style="color:var(--text-primary);font-weight:700">$${data.c.toFixed(2)}</span>` +
+      `<span style="color:${data.d >= 0 ? 'var(--gain)' : 'var(--loss)'};margin-left:8px">${sign}${data.dp.toFixed(2)}%</span>` +
+      (ts ? `<span style="color:var(--text-faint);margin-left:8px">${ts} IL</span>` : '');
+  } catch {
     infoEl.textContent = 'Price fetch failed.';
   } finally {
     btn.disabled = false;
   }
 });
 
-// ── T10: Insert trade ──
+// ── Insert trade ──
 document.getElementById('form-trade').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn   = document.getElementById('btn-log-trade');
@@ -189,16 +178,15 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
   btn.disabled    = true;
   btn.textContent = 'Saving…';
 
-  const stock    = document.getElementById('trade-stock').value.trim().toUpperCase();
-  const sector   = document.getElementById('trade-sector').value || 'Other';
-  const buyPrice = parseFloat(document.getElementById('trade-entry-price').value);
-  const sellPrice= parseFloat(document.getElementById('trade-exit-price').value);
-  const category = document.getElementById('trade-order-category').value;
-  const quantity = parseInt(document.getElementById('trade-quantity').value, 10);
-  const date     = document.getElementById('trade-date').value;
+  const stock     = document.getElementById('trade-stock').value.trim().toUpperCase();
+  const sector    = document.getElementById('trade-sector').value || 'Other';
+  const buyPrice  = parseFloat(document.getElementById('trade-entry-price').value);
+  const sellPrice = parseFloat(document.getElementById('trade-exit-price').value);
+  const category  = document.getElementById('trade-order-category').value;
+  const quantity  = parseInt(document.getElementById('trade-quantity').value, 10);
+  const date      = document.getElementById('trade-date').value;
 
-  // Derive entry_time / exit_time from date + order category
-  const holdDays = { 'Day Trade': 0, 'Short Sell': 0, 'Swing Trade': 5, 'Long Position': 30 };
+  const holdDays  = { 'Day Trade': 0, 'Short Sell': 0, 'Swing Trade': 5, 'Long Position': 30 };
   const entryTime = `${date}T09:30:00`;
   const exitDate  = new Date(date);
   exitDate.setDate(exitDate.getDate() + (holdDays[category] ?? 0));
@@ -216,9 +204,9 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
     );
 
     e.target.reset();
-    document.getElementById('sector-badge').textContent = 'Sector will auto-fill';
-    document.getElementById('sector-badge').classList.remove('text-emerald-400');
-    document.getElementById('sector-badge').classList.add('text-slate-400');
+    const badge = document.getElementById('sector-badge');
+    badge.textContent = 'Sector will auto-fill';
+    badge.classList.remove('filled');
     btn.textContent = '✓ Logged!';
     setTimeout(() => { btn.textContent = 'Log Trade'; }, 1500);
     navDashboard.click();
@@ -232,7 +220,7 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
   }
 });
 
-// ── T11: Fetch trades + render everything ──
+// ── Fetch + render ──
 let allTrades = [];
 
 async function loadTrades() {
@@ -267,74 +255,83 @@ async function loadTrades() {
   }
 }
 
-// ── T12–T14: Behavioral metrics ──
+// ── Behavioral metrics ──
 function computeMetrics(chrono) {
-  const n = chrono.length;
+  const n   = chrono.length;
   const pnl = t => calcPnl(t);
 
-  // Panic Exit Rate — Day Trades that lost / all Day Trades
-  const dayTrades   = chrono.filter(t => t.order_category === 'Day Trade');
-  const panicExits  = dayTrades.filter(t => pnl(t) < 0);
-  const panicRate   = dayTrades.length ? Math.round(panicExits.length / dayTrades.length * 100) : null;
-  const composure   = panicRate !== null ? 100 - panicRate : null;
+  // Composure Rating
+  const dayTrades  = chrono.filter(t => t.order_category === 'Day Trade');
+  const panicExits = dayTrades.filter(t => pnl(t) < 0);
+  const panicRate  = dayTrades.length ? Math.round(panicExits.length / dayTrades.length * 100) : null;
+  const composure  = panicRate !== null ? 100 - panicRate : null;
 
   const panicEl  = document.getElementById('stat-panic');
   const panicBar = document.getElementById('stat-panic-bar');
   if (composure !== null) {
-    panicEl.textContent = composure;
-    panicEl.className   = `text-5xl font-black mt-2 ${composure >= 70 ? 'text-emerald-400' : composure >= 40 ? 'text-yellow-400' : 'text-red-400'}`;
-    panicBar.style.width     = `${composure}%`;
-    panicBar.className       = `h-full rounded-full transition-all duration-700 ${composure >= 70 ? 'bg-emerald-400' : composure >= 40 ? 'bg-yellow-400' : 'bg-red-400'}`;
+    const r = composure >= 70 ? 'good' : composure >= 40 ? 'warn' : 'bad';
+    panicEl.textContent    = composure;
+    panicEl.className      = `stat-num ${r}`;
+    panicBar.style.width   = `${composure}%`;
+    panicBar.className     = `progress-fill ${r}`;
   } else {
     panicEl.textContent = 'N/A';
-    panicEl.className   = 'text-5xl font-black mt-2 text-slate-500';
+    panicEl.className   = 'stat-num neutral';
   }
 
-  // FOMO Tax — losses on trades entered same date as a prior winning trade
+  // FOMO Tax
   let fomoTax = 0, fomoCount = 0;
   for (let i = 1; i < n; i++) {
-    const prevPnl  = pnl(chrono[i - 1]);
-    const currPnl  = pnl(chrono[i]);
-    const sameDay  = chrono[i - 1].entry_time?.slice(0, 10) === chrono[i].entry_time?.slice(0, 10);
+    const prevPnl = pnl(chrono[i - 1]);
+    const currPnl = pnl(chrono[i]);
+    const sameDay = chrono[i - 1].entry_time?.slice(0, 10) === chrono[i].entry_time?.slice(0, 10);
     if (prevPnl > 0 && sameDay && currPnl < 0) { fomoTax += currPnl; fomoCount++; }
   }
   const fomoEl  = document.getElementById('stat-fomo');
   const fomoSub = document.getElementById('stat-fomo-sub');
   fomoEl.textContent = fomoCount ? `-$${Math.abs(fomoTax).toFixed(0)}` : '$0';
-  fomoEl.className   = `text-5xl font-black mt-2 ${fomoTax < 0 ? 'text-red-400' : 'text-slate-400'}`;
+  fomoEl.className   = `stat-num ${fomoTax < 0 ? 'bad' : 'neutral'}`;
   fomoSub.textContent = fomoCount ? `${fomoCount} chaser trade${fomoCount > 1 ? 's' : ''} identified` : 'No chasing detected yet';
 
-  // Tilt Multiplier — avg loss size after a prior loss vs overall avg loss
-  const allLosses = chrono.filter(t => pnl(t) < 0).map(t => Math.abs(pnl(t)));
-  const avgLoss   = allLosses.length ? allLosses.reduce((a, b) => a + b, 0) / allLosses.length : 0;
+  // Tilt Multiplier
+  const allLosses     = chrono.filter(t => pnl(t) < 0).map(t => Math.abs(pnl(t)));
+  const avgLoss       = allLosses.length ? allLosses.reduce((a, b) => a + b, 0) / allLosses.length : 0;
   const postLossLosses = [];
   for (let i = 1; i < n; i++) {
     if (pnl(chrono[i - 1]) < 0 && pnl(chrono[i]) < 0)
       postLossLosses.push(Math.abs(pnl(chrono[i])));
   }
-  const avgPost   = postLossLosses.length ? postLossLosses.reduce((a, b) => a + b, 0) / postLossLosses.length : null;
-  const tiltMult  = avgLoss > 0 && avgPost !== null ? avgPost / avgLoss : null;
+  const avgPost  = postLossLosses.length ? postLossLosses.reduce((a, b) => a + b, 0) / postLossLosses.length : null;
+  const tiltMult = avgLoss > 0 && avgPost !== null ? avgPost / avgLoss : null;
 
   const tiltEl  = document.getElementById('stat-tilt');
   const tiltSub = document.getElementById('stat-tilt-sub');
   if (tiltMult !== null) {
-    tiltEl.textContent = `${tiltMult.toFixed(1)}x`;
-    tiltEl.className   = `text-5xl font-black mt-2 ${tiltMult > 1.2 ? 'text-red-400' : 'text-emerald-400'}`;
+    const r = tiltMult > 1.2 ? 'bad' : 'good';
+    tiltEl.textContent  = `${tiltMult.toFixed(1)}x`;
+    tiltEl.className    = `stat-num ${r}`;
     tiltSub.textContent = tiltMult > 1.2 ? '⚠ You lose bigger after a loss' : '✓ Losses stay consistent';
   } else {
     tiltEl.textContent  = 'N/A';
-    tiltEl.className    = 'text-5xl font-black mt-2 text-slate-500';
+    tiltEl.className    = 'stat-num neutral';
     tiltSub.textContent = 'Need consecutive losses to measure';
   }
 }
 
-// ── T15–T16: Trade Autopsy tagging + timeline ──
-const TAG_STYLE = {
-  PANIC_EXIT:     { bg: 'bg-red-500',     label: 'Panic Exit' },
-  EUPHORIA_TRADE: { bg: 'bg-yellow-500',  label: 'Euphoria' },
-  REVENGE_TRADE:  { bg: 'bg-orange-500',  label: 'Revenge' },
-  TUNNEL_VISION:  { bg: 'bg-purple-500',  label: 'Tunnel Vision' },
-  CLEAN:          { bg: 'bg-emerald-600', label: 'Clean' },
+// ── Behavioral tagging ──
+const TAG_META = {
+  PANIC_EXIT:     { cls: 'tag-PANIC_EXIT',     label: 'Panic Exit',    color: '#ef4444' },
+  EUPHORIA_TRADE: { cls: 'tag-EUPHORIA_TRADE', label: 'Euphoria',      color: '#eab308' },
+  REVENGE_TRADE:  { cls: 'tag-REVENGE_TRADE',  label: 'Revenge',       color: '#f97316' },
+  TUNNEL_VISION:  { cls: 'tag-TUNNEL_VISION',  label: 'Tunnel Vision', color: '#a855f7' },
+  CLEAN:          { cls: 'tag-CLEAN',          label: 'Clean',         color: '#059669' },
+};
+
+const CAT_CLASS = {
+  'Day Trade':     'cat-day',
+  'Swing Trade':   'cat-swing',
+  'Long Position': 'cat-long',
+  'Short Sell':    'cat-short',
 };
 
 function tagTrade(t, i, chrono) {
@@ -353,6 +350,7 @@ function buildTagMap(chrono) {
   return map;
 }
 
+// ── Timeline ──
 function renderTimeline(chrono, tagMap) {
   const container = document.getElementById('timeline');
   const empty     = document.getElementById('timeline-empty');
@@ -360,23 +358,23 @@ function renderTimeline(chrono, tagMap) {
   if (!chrono.length) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
-  chrono.forEach(t => {
-    const tag    = tagMap[t.$id] || 'CLEAN';
-    const style  = TAG_STYLE[tag];
-    const p      = calcPnl(t);
-    const pSign  = p >= 0 ? '+' : '';
-    const ring   = p >= 0 ? 'ring-emerald-400' : 'ring-red-400';
+  chrono.forEach((t, i) => {
+    const tag  = tagMap[t.$id] || 'CLEAN';
+    const meta = TAG_META[tag];
+    const p    = calcPnl(t);
+    const pSign = p >= 0 ? '+' : '';
+    const ring  = p >= 0 ? 'ring-gain' : 'ring-loss';
 
     const dot = document.createElement('div');
-    dot.className = 'trade-dot relative flex-shrink-0 group cursor-default';
+    dot.className = 'trade-dot';
     dot.innerHTML = `
-      <div class="w-12 h-12 rounded-full ${style.bg} ${ring} ring-2 flex items-center justify-center text-white font-bold text-xs">
+      <div class="trade-dot-inner ${ring}" style="background:${meta.color};animation-delay:${i * 55}ms">
         ${t.stock.slice(0, 4)}
       </div>
-      <div class="absolute bottom-14 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs w-36 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
-        <p class="font-bold">${t.stock}</p>
-        <p class="${p >= 0 ? 'text-emerald-400' : 'text-red-400'}">${pSign}$${Math.abs(p).toFixed(2)}</p>
-        <p class="text-slate-300 mt-1 font-semibold">${style.label}</p>
+      <div class="trade-dot-tooltip">
+        <p style="font-weight:700;color:var(--text-primary);margin:0">${t.stock}</p>
+        <p style="color:${p >= 0 ? 'var(--gain)' : 'var(--loss)'};margin:2px 0">${pSign}$${Math.abs(p).toFixed(2)}</p>
+        <p style="color:var(--text-secondary);font-weight:600;margin:0">${meta.label}</p>
       </div>`;
     container.appendChild(dot);
   });
@@ -386,7 +384,7 @@ function renderTimeline(chrono, tagMap) {
 function renderTopSectors(chrono) {
   const el = document.getElementById('top-sectors');
   if (!chrono.length) {
-    el.innerHTML = '<p class="text-slate-600 text-sm">No sector data yet.</p>';
+    el.innerHTML = '<p style="color:var(--text-faint);font-size:14px">No sector data yet.</p>';
     return;
   }
 
@@ -405,66 +403,77 @@ function renderTopSectors(chrono) {
     .slice(0, 2);
 
   if (!ranked.length) {
-    el.innerHTML = '<p class="text-slate-600 text-sm">No sector data yet.</p>';
+    el.innerHTML = '<p style="color:var(--text-faint);font-size:14px">No sector data yet.</p>';
     return;
   }
 
   const medals = ['🥇', '🥈'];
   el.innerHTML = ranked.map(([sector, s], i) => {
-    const pnlSign  = s.total >= 0 ? '+' : '';
-    const pnlColor = s.total >= 0 ? 'text-emerald-400' : 'text-red-400';
+    const pnlSign  = s.total >= 0 ? '+' : '-';
+    const pnlColor = s.total >= 0 ? 'var(--gain)' : 'var(--loss)';
     const winRate  = Math.round(s.wins / s.count * 100);
-    const barW     = winRate;
-    const barColor = winRate >= 60 ? 'bg-emerald-500' : winRate >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+    const rating   = winRate >= 60 ? 'good' : winRate >= 40 ? 'warn' : 'bad';
     return `
-      <div class="bg-slate-800/60 rounded-xl p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-bold text-white">${medals[i]} ${sector}</span>
-          <span class="font-black ${pnlColor}">${pnlSign}$${Math.abs(s.total).toFixed(2)}</span>
+      <div class="glass-card-nested" style="padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-weight:700;color:var(--text-primary)">${medals[i]} ${sector}</span>
+          <span style="font-weight:900;color:${pnlColor}">${pnlSign}$${Math.abs(s.total).toFixed(2)}</span>
         </div>
-        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:8px">
           <span>${s.count} trade${s.count !== 1 ? 's' : ''}</span>
           <span>${winRate}% win rate</span>
         </div>
-        <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-          <div class="h-full ${barColor} rounded-full" style="width:${barW}%"></div>
+        <div class="progress-track" style="margin-top:0">
+          <div class="progress-fill ${rating}" style="width:${winRate}%"></div>
         </div>
       </div>`;
   }).join('');
 }
 
-// ── T17–T18: Charts ──
-let sectorChart = null;
-let pnlChart    = null;
-let tagsChart   = null;
+// ── Charts ──
+let sectorChart = null, pnlChart = null, tagsChart = null;
 
 function renderCharts(chrono) {
-  // Sector bar chart
   const counts = {};
   chrono.forEach(t => { counts[t.sector] = (counts[t.sector] || 0) + 1; });
   if (sectorChart) sectorChart.destroy();
   sectorChart = new Chart(document.getElementById('chart-sector'), {
     type: 'bar',
-    data: {
-      labels: Object.keys(counts),
-      datasets: [{ data: Object.values(counts), backgroundColor: '#10b981', borderRadius: 6 }]
-    },
+    data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: '#10b981', borderRadius: 6 }] },
     options: {
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
-        y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#1e293b' } }
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
       }
     }
   });
 
-  // Cumulative P&L line chart
   let cum = 0;
-  const pnlPoints = chrono.map(t => {
-    cum += calcPnl(t);
-    return parseFloat(cum.toFixed(2));
+  const pnlPoints = chrono.map(t => parseFloat((cum += calcPnl(t)).toFixed(2)));
+  if (pnlChart) pnlChart.destroy();
+  pnlChart = new Chart(document.getElementById('chart-pnl'), {
+    type: 'line',
+    data: {
+      labels: chrono.map(t => t.stock),
+      datasets: [{
+        data: pnlPoints,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.08)',
+        fill: true, tension: 0.3,
+        pointBackgroundColor: pnlPoints.map(v => v >= 0 ? '#10b981' : '#f87171'),
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
   });
-  // Behavioral breakdown pie chart
+
   const tagOrder  = ['CLEAN', 'PANIC_EXIT', 'EUPHORIA_TRADE', 'REVENGE_TRADE', 'TUNNEL_VISION'];
   const tagLabels = ['Clean', 'Panic Exit', 'Euphoria', 'Revenge', 'Tunnel Vision'];
   const tagColors = ['#059669', '#ef4444', '#eab308', '#f97316', '#a855f7'];
@@ -474,85 +483,45 @@ function renderCharts(chrono) {
   if (tagsChart) tagsChart.destroy();
   tagsChart = new Chart(document.getElementById('chart-tags'), {
     type: 'pie',
-    data: {
-      labels: tagLabels,
-      datasets: [{ data: tagCounts, backgroundColor: tagColors, borderWidth: 0 }]
-    },
+    data: { labels: tagLabels, datasets: [{ data: tagCounts, backgroundColor: tagColors, borderWidth: 0 }] },
     options: {
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#94a3b8', padding: 12, font: { size: 11 } }
-        }
-      }
-    }
-  });
-
-  if (pnlChart) pnlChart.destroy();
-  pnlChart = new Chart(document.getElementById('chart-pnl'), {
-    type: 'line',
-    data: {
-      labels: chrono.map(t => t.stock),
-      datasets: [{
-        data: pnlPoints,
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16,185,129,0.1)',
-        fill: true,
-        tension: 0.3,
-        pointBackgroundColor: pnlPoints.map(v => v >= 0 ? '#10b981' : '#ef4444'),
-        pointRadius: 5,
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
-        y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+        legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 11 } } }
       }
     }
   });
 }
 
-const CATEGORY_BADGE = {
-  'Day Trade':     'bg-blue-900/50 text-blue-300',
-  'Swing Trade':   'bg-purple-900/50 text-purple-300',
-  'Long Position': 'bg-emerald-900/50 text-emerald-300',
-  'Short Sell':    'bg-orange-900/50 text-orange-300',
-};
-
+// ── Trade history table ──
 function renderTable(trades, tagMap = {}) {
   const tbody = document.getElementById('trades-table-body');
   if (!trades.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-center text-slate-600">No trades logged yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="padding:40px 0;text-align:center;color:var(--text-faint)">No trades logged yet.</td></tr>';
     return;
   }
 
   tbody.innerHTML = trades.map(t => {
-    const pnl     = calcPnl(t).toFixed(2);
-    const pnlCls  = pnl >= 0 ? 'text-emerald-400' : 'text-red-400';
-    const pnlSign = pnl >= 0 ? '+' : '';
-    const catCls  = CATEGORY_BADGE[t.order_category] || 'bg-slate-800 text-slate-400';
+    const p       = calcPnl(t);
+    const pStr    = p.toFixed(2);
+    const pSign   = p >= 0 ? '+' : '';
+    const pColor  = p >= 0 ? 'var(--gain)' : 'var(--loss)';
+    const catCls  = CAT_CLASS[t.order_category] || '';
     const tag     = tagMap[t.$id];
-    const tagStyle = TAG_STYLE[tag];
+    const tagMeta = TAG_META[tag];
     const date    = t.entry_time ? t.entry_time.slice(0, 10) : '—';
 
     return `
-      <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition-colors">
-        <td class="py-3 pr-6 font-bold">${t.stock}</td>
-        <td class="py-3 pr-6 text-slate-400 text-sm">${date}</td>
-        <td class="py-3 pr-6 text-slate-400 text-sm">${t.sector}</td>
-        <td class="py-3 pr-6 text-slate-300">${t.quantity || 1}</td>
-        <td class="py-3 pr-6">$${parseFloat(t.entry_price).toFixed(2)}</td>
-        <td class="py-3 pr-6">$${parseFloat(t.exit_price).toFixed(2)}</td>
-        <td class="py-3 pr-6 font-bold ${pnlCls}">${pnlSign}$${pnl}</td>
-        <td class="py-3 pr-6"><span class="px-2 py-1 rounded-md text-xs font-semibold ${catCls}">${t.order_category || '—'}</span></td>
-        <td class="py-3 pr-6">
-          ${tagStyle ? `<span class="px-2 py-1 rounded-md text-xs font-semibold text-white ${tagStyle.bg}">${tagStyle.label}</span>` : '<span class="text-slate-600 text-xs">—</span>'}
-        </td>
-        <td class="py-3">
-          <button class="delete-btn text-slate-600 hover:text-red-400 transition-colors text-xs font-semibold px-2 py-1 rounded hover:bg-red-400/10"
-            data-id="${t.$id}">✕</button>
-        </td>
+      <tr>
+        <td style="font-weight:700">${t.stock}</td>
+        <td style="color:var(--text-muted);font-size:13px">${date}</td>
+        <td style="color:var(--text-muted);font-size:13px">${t.sector}</td>
+        <td style="color:var(--text-emphasis)">${t.quantity || 1}</td>
+        <td>$${parseFloat(t.entry_price).toFixed(2)}</td>
+        <td>$${parseFloat(t.exit_price).toFixed(2)}</td>
+        <td style="font-weight:700;color:${pColor}">${pSign}$${Math.abs(p).toFixed(2)}</td>
+        <td><span class="cat-badge ${catCls}">${t.order_category || '—'}</span></td>
+        <td>${tagMeta ? `<span class="tag-badge ${tagMeta.cls}">${tagMeta.label}</span>` : '<span style="color:var(--text-faint);font-size:11px">—</span>'}</td>
+        <td><button class="delete-btn btn-delete" data-id="${t.$id}">✕</button></td>
       </tr>`;
   }).join('');
 }
