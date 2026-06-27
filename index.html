@@ -142,12 +142,26 @@
 
       </div>
 
-      <!-- Trade Autopsy Timeline -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Trade Autopsy</h2>
-        <div id="timeline" class="flex gap-3 overflow-x-auto pb-2 min-h-[72px] items-center">
-          <p id="timeline-empty" class="text-slate-600 text-sm">No trades yet — log your first trade to see the timeline.</p>
+      <!-- Trade Autopsy + Top Sectors -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Left: Timeline -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Trade Autopsy</h2>
+          <div id="timeline" class="flex gap-3 overflow-x-auto pb-2 min-h-[72px] items-center">
+            <p id="timeline-empty" class="text-slate-600 text-sm">No trades yet — log your first trade to see the timeline.</p>
+          </div>
         </div>
+
+        <!-- Right: Top 2 Sectors -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Top Sectors</h2>
+          <p class="text-slate-600 text-xs mb-4">Your 2 most profitable trading areas</p>
+          <div id="top-sectors" class="space-y-3">
+            <p class="text-slate-600 text-sm">No sector data yet.</p>
+          </div>
+        </div>
+
       </div>
 
       <!-- Charts -->

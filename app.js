@@ -256,6 +256,7 @@ async function loadTrades() {
     renderTable(allTrades, tagMap);
     computeMetrics(chrono);
     renderTimeline(chrono, tagMap);
+    renderTopSectors(chrono);
     renderCharts(chrono);
     content.classList.remove('hidden');
   } catch (err) {
@@ -379,6 +380,57 @@ function renderTimeline(chrono, tagMap) {
       </div>`;
     container.appendChild(dot);
   });
+}
+
+// ── Top Sectors ──
+function renderTopSectors(chrono) {
+  const el = document.getElementById('top-sectors');
+  if (!chrono.length) {
+    el.innerHTML = '<p class="text-slate-600 text-sm">No sector data yet.</p>';
+    return;
+  }
+
+  const bysector = {};
+  chrono.forEach(t => {
+    const s = t.sector || 'Other';
+    if (!bysector[s]) bysector[s] = { total: 0, wins: 0, count: 0 };
+    const p = calcPnl(t);
+    bysector[s].total += p;
+    bysector[s].count++;
+    if (p > 0) bysector[s].wins++;
+  });
+
+  const ranked = Object.entries(bysector)
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 2);
+
+  if (!ranked.length) {
+    el.innerHTML = '<p class="text-slate-600 text-sm">No sector data yet.</p>';
+    return;
+  }
+
+  const medals = ['🥇', '🥈'];
+  el.innerHTML = ranked.map(([sector, s], i) => {
+    const pnlSign  = s.total >= 0 ? '+' : '';
+    const pnlColor = s.total >= 0 ? 'text-emerald-400' : 'text-red-400';
+    const winRate  = Math.round(s.wins / s.count * 100);
+    const barW     = winRate;
+    const barColor = winRate >= 60 ? 'bg-emerald-500' : winRate >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+    return `
+      <div class="bg-slate-800/60 rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-bold text-white">${medals[i]} ${sector}</span>
+          <span class="font-black ${pnlColor}">${pnlSign}$${Math.abs(s.total).toFixed(2)}</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+          <span>${s.count} trade${s.count !== 1 ? 's' : ''}</span>
+          <span>${winRate}% win rate</span>
+        </div>
+        <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <div class="h-full ${barColor} rounded-full" style="width:${barW}%"></div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ── T17–T18: Charts ──
@@ -522,6 +574,7 @@ document.getElementById('trades-table-body').addEventListener('click', async (e)
     renderTable(allTrades, tagMap);
     computeMetrics(chrono);
     renderTimeline(chrono, tagMap);
+    renderTopSectors(chrono);
     renderCharts(chrono);
   } catch (err) {
     alert('Could not delete: ' + err.message);
