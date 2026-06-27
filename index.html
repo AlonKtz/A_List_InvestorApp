@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The A List — Behavioral Trading Journal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen antialiased">
+
+  <!-- ── AUTH SCREEN ── -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md">
+
+      <div class="text-center mb-8">
+        <h1 class="text-5xl font-black tracking-tight">THE <span class="text-emerald-400">A</span> LIST</h1>
+        <p class="text-slate-400 mt-2 text-sm tracking-wide">Your behavioral edge. Exposed.</p>
+      </div>
+
+      <div class="flex bg-slate-900 rounded-xl p-1 mb-6">
+        <button id="tab-login"
+          class="flex-1 py-2 rounded-lg text-sm font-bold transition-all bg-emerald-500 text-white">
+          Log In
+        </button>
+        <button id="tab-signup"
+          class="flex-1 py-2 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white">
+          Sign Up
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Email</label>
+          <input type="email" id="login-email" required placeholder="you@example.com"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+        </div>
+        <p id="login-error" class="text-red-400 text-sm hidden"></p>
+        <button type="submit"
+          class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3 rounded-lg transition-colors">
+          Log In
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="form-signup" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Email</label>
+          <input type="email" id="signup-email" required placeholder="you@example.com"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Password</label>
+          <input type="password" id="signup-password" required placeholder="Min 8 characters"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+        </div>
+        <p id="signup-error" class="text-red-400 text-sm hidden"></p>
+        <button type="submit"
+          class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3 rounded-lg transition-colors">
+          Create Account
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ── APP SHELL (hidden until authenticated) ── -->
+  <div id="app-shell" class="hidden min-h-screen flex flex-col">
+
+    <!-- NAV -->
+    <nav class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      <h1 class="text-xl font-black tracking-tight">THE <span class="text-emerald-400">A</span> LIST</h1>
+      <div class="flex items-center gap-2">
+        <button id="nav-dashboard"
+          class="px-4 py-2 rounded-lg text-sm font-bold bg-emerald-500 text-white transition-all">
+          Dashboard
+        </button>
+        <button id="nav-log"
+          class="px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-all">
+          + Log Trade
+        </button>
+        <button id="btn-logout"
+          class="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-red-400 transition-colors ml-4">
+          Logout
+        </button>
+      </div>
+    </nav>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="flex-1 p-6 space-y-6">
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Composure Rating</p>
+          <p id="stat-panic" class="text-5xl font-black mt-2">—</p>
+          <p class="text-xs text-slate-500 mt-2">% of fast exits that lost money</p>
+          <div class="mt-3 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div id="stat-panic-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-700" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">FOMO Tax</p>
+          <p id="stat-fomo" class="text-5xl font-black mt-2">—</p>
+          <p class="text-xs text-slate-500 mt-2">Lost chasing prior winners</p>
+          <p id="stat-fomo-sub" class="text-xs text-slate-600 mt-1"></p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Tilt Multiplier</p>
+          <p id="stat-tilt" class="text-5xl font-black mt-2">—</p>
+          <p class="text-xs text-slate-500 mt-2">Loss size after a loss vs your average</p>
+          <p id="stat-tilt-sub" class="text-xs text-slate-600 mt-1"></p>
+        </div>
+
+      </div>
+
+      <!-- Trade Autopsy Timeline -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Trade Autopsy</h2>
+        <div id="timeline" class="flex gap-3 overflow-x-auto pb-2 min-h-[72px] items-center">
+          <p id="timeline-empty" class="text-slate-600 text-sm">No trades yet — log your first trade to see the timeline.</p>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Trades by Sector</h2>
+          <canvas id="chart-sector" height="220"></canvas>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Cumulative P&amp;L</h2>
+          <canvas id="chart-pnl" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Trade History Table -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Trade History</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-slate-500 border-b border-slate-800">
+                <th class="pb-3 pr-6 font-semibold">Stock</th>
+                <th class="pb-3 pr-6 font-semibold">Sector</th>
+                <th class="pb-3 pr-6 font-semibold">Entry $</th>
+                <th class="pb-3 pr-6 font-semibold">Exit $</th>
+                <th class="pb-3 pr-6 font-semibold">P&amp;L</th>
+                <th class="pb-3 pr-6 font-semibold">Hold</th>
+                <th class="pb-3 font-semibold">Tag</th>
+              </tr>
+            </thead>
+            <tbody id="trades-table-body">
+              <tr>
+                <td colspan="7" class="py-10 text-center text-slate-600">No trades logged yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOG TRADE VIEW -->
+    <div id="view-log" class="hidden flex-1 p-6">
+      <div class="max-w-lg mx-auto">
+        <h2 class="text-2xl font-black mb-6">Log a Trade</h2>
+        <form id="form-trade" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Stock Ticker</label>
+              <input type="text" id="trade-stock" required placeholder="e.g. AAPL"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors uppercase">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Sector</label>
+              <select id="trade-sector" required
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                <option value="">Select sector</option>
+                <option>Technology</option>
+                <option>Healthcare</option>
+                <option>Finance</option>
+                <option>Energy</option>
+                <option>Consumer</option>
+                <option>Industrials</option>
+                <option>Real Estate</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Entry Price ($)</label>
+              <input type="number" id="trade-entry-price" required step="0.01" min="0" placeholder="0.00"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Exit Price ($)</label>
+              <input type="number" id="trade-exit-price" required step="0.01" min="0" placeholder="0.00"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Entry Time</label>
+              <input type="datetime-local" id="trade-entry-time" required
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Exit Time</label>
+              <input type="datetime-local" id="trade-exit-time" required
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors">
+            </div>
+          </div>
+
+          <p id="trade-error" class="text-red-400 text-sm hidden"></p>
+          <button type="submit" id="btn-log-trade"
+            class="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors">
+            Log Trade
+          </button>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
