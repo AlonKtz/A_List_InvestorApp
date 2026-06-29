@@ -106,7 +106,7 @@ document.getElementById('btn-demo-jack').addEventListener('click', () => {
 
 // ── Logout ──
 document.getElementById('btn-logout').addEventListener('click', async () => {
-  await account.deleteSession('current');
+  try { await account.deleteSession('current'); } catch (_) { /* already a guest */ }
   location.reload();
 });
 
