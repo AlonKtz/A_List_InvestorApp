@@ -76,6 +76,14 @@ formSignup.addEventListener('submit', async (e) => {
   }
 });
 
+// ── Demo Login — Jack ──
+document.getElementById('btn-demo-jack').addEventListener('click', () => {
+  document.getElementById('login-email').value    = 'jack@alist.demo';
+  document.getElementById('login-password').value = 'DemoJack123!';
+  tabLogin.click();
+  formLogin.requestSubmit();
+});
+
 // ── Logout ──
 document.getElementById('btn-logout').addEventListener('click', async () => {
   await account.deleteSession('current');
