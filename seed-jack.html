@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Seed Jack — The A List</title>
+  <title>Seed Bearded Jack — The A List</title>
   <style>
-    body { font-family: monospace; background: #0f172a; color: #94a3b8; padding: 40px; max-width: 640px; }
+    body { font-family: monospace; background: #0f172a; color: #94a3b8; padding: 40px; max-width: 680px; }
     h1   { color: #34d399; margin-bottom: 4px; }
     p    { color: #64748b; font-size: 13px; margin: 0 0 24px; }
     .ok  { color: #34d399; }
     .err { color: #f87171; }
     .inf { color: #60a5fa; }
-    pre  { margin: 3px 0; font-size: 13px; }
+    pre  { margin: 3px 0; font-size: 13px; white-space: pre-wrap; }
     #run { padding: 10px 24px; background: #059669; border: none; border-radius: 8px;
            color: #fff; font-family: monospace; font-size: 14px; font-weight: 700;
            cursor: pointer; margin-bottom: 24px; }
@@ -19,52 +19,55 @@
   </style>
 </head>
 <body>
-  <h1>Seed Jack's Demo Account</h1>
-  <p>Run this once to create Jack's account and populate his 17 trades. Safe to run again — it skips account creation if Jack already exists.</p>
+  <h1>Seed Bearded Jack's Demo Account</h1>
+  <p>Creates the demo user "Bearded Jack, Amateur Investor" and populates a portfolio engineered to exercise every app feature. Re-running wipes his existing trades first, so the result is always exactly these 16 trades.</p>
   <button id="run">▶ Run Seeder</button>
   <div id="log"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/appwrite/dist/iife/sdk.js"></script>
   <script src="config.js"></script>
   <script>
-    const { Client, Account, Databases, ID, Permission, Role } = Appwrite;
+    const { Client, Account, Databases, ID, Query, Permission, Role } = Appwrite;
     const client    = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
     const account   = new Account(client);
     const databases = new Databases(client);
 
     const JACK_EMAIL    = 'jack@alist.demo';
     const JACK_PASSWORD = 'DemoJack123!';
+    const JACK_NAME     = 'Bearded Jack';
 
-    // 17 trades seeded in chronological order (important — chrono sort is by $createdAt)
-    // Tags auto-computed by app.js based on sequence:
-    //  idx 0-2: CLEAN (first 3 tech wins)
-    //  idx 3:   TUNNEL_VISION (4th tech trade in a row)
-    //  idx 4:   PANIC_EXIT (day trade loss, prev was win)
-    //  idx 5-6: REVENGE_TRADE (after loss)
-    //  idx 7-9: CLEAN (back-to-back wins)
-    //  idx 10:  EUPHORIA_TRADE (same-day loss after a win)
-    //  idx 11-12: REVENGE_TRADE (after losses)
-    //  idx 13:  EUPHORIA_TRADE (same-day loss after a win)
-    //  idx 14:  REVENGE_TRADE (after loss)
-    //  idx 15-16: CLEAN (recovery)
+    // ── Portfolio engineered to maximize every dashboard feature ──
+    // Seeded in chronological order (chrono sort = $createdAt = insertion order).
+    // Tags are auto-derived by app.js from the sequence. The design hits all of:
+    //   • All 5 behavioral tags in the pie:
+    //       CLEAN ×6, TUNNEL_VISION ×2, PANIC_EXIT ×1, REVENGE_TRADE ×5, EUPHORIA_TRADE ×2
+    //   • All 4 order types (Day Trade, Swing Trade, Long Position, Short Sell)
+    //   • Short Sell shown both losing (idx7) and winning (idx15)
+    //   • Composure ~56 (warn): 4 of 9 day trades lost
+    //   • FOMO Tax = $770 across 2 same-day chaser losses (idx11, idx14)
+    //   • Tilt Multiplier ~1.38× (danger): escalating losses idx5→6→7
+    //   • Best trade  +$1380 (XOM, idx9) · Worst trade  -$700 (C short, idx7)
+    //   • Top Sectors: Energy (+1860) & Technology (+1804)
+    //   • Cumulative P&L: rises, craters mid-run on the Financials cluster, recovers to +$2899
+    // idx: 0   1   2   3(TUN) 4(TUN) 5(PANIC) 6(REV) 7(REV/worst) 8(REV)
+    //      9(best/CLEAN) 10 11(EUPH/FOMO) 12(REV) 13 14(EUPH/FOMO) 15(REV/short win)
     const TRADES = [
-      { stock:'AAPL',  sector:'Technology',    entry_price:185,   exit_price:192,   qty:40,  cat:'Day Trade',     date:'2025-09-10', entryT:'09:30' },
-      { stock:'MSFT',  sector:'Technology',    entry_price:415,   exit_price:440,   qty:10,  cat:'Swing Trade',   date:'2025-09-18', entryT:'09:30' },
-      { stock:'NVDA',  sector:'Technology',    entry_price:478,   exit_price:495,   qty:15,  cat:'Day Trade',     date:'2025-10-02', entryT:'09:30' },
-      { stock:'AMD',   sector:'Technology',    entry_price:154,   exit_price:161,   qty:25,  cat:'Day Trade',     date:'2025-10-15', entryT:'09:30' },
-      { stock:'JPM',   sector:'Financials',    entry_price:212,   exit_price:205,   qty:20,  cat:'Day Trade',     date:'2025-10-28', entryT:'09:30' },
-      { stock:'BA',    sector:'Industrials',   entry_price:168,   exit_price:159,   qty:15,  cat:'Swing Trade',   date:'2025-11-05', entryT:'09:30' },
-      { stock:'XOM',   sector:'Energy',        entry_price:115,   exit_price:128,   qty:30,  cat:'Swing Trade',   date:'2025-11-12', entryT:'09:30' },
-      { stock:'LLY',   sector:'Healthcare',    entry_price:795,   exit_price:855,   qty:5,   cat:'Long Position', date:'2025-11-20', entryT:'09:30' },
-      { stock:'GOOGL', sector:'Communication', entry_price:168,   exit_price:180,   qty:20,  cat:'Long Position', date:'2025-12-03', entryT:'09:30' },
-      { stock:'META',  sector:'Communication', entry_price:580,   exit_price:595,   qty:15,  cat:'Day Trade',     date:'2025-12-10', entryT:'09:30' },
-      { stock:'TSLA',  sector:'Consumer Disc', entry_price:250,   exit_price:238,   qty:20,  cat:'Day Trade',     date:'2025-12-10', entryT:'10:15' }, // same day as META → EUPHORIA
-      { stock:'TSLA',  sector:'Consumer Disc', entry_price:400,   exit_price:385,   qty:25,  cat:'Day Trade',     date:'2026-01-08', entryT:'09:30' },
-      { stock:'COIN',  sector:'Financials',    entry_price:235,   exit_price:252,   qty:30,  cat:'Day Trade',     date:'2026-01-15', entryT:'09:30' },
-      { stock:'SOFI',  sector:'Financials',    entry_price:12.50, exit_price:11.80, qty:300, cat:'Day Trade',     date:'2026-01-15', entryT:'10:00' }, // same day as COIN → EUPHORIA
-      { stock:'PLTR',  sector:'Technology',    entry_price:72,    exit_price:85,    qty:40,  cat:'Swing Trade',   date:'2026-02-01', entryT:'09:30' },
-      { stock:'AMZN',  sector:'Consumer Disc', entry_price:225,   exit_price:248,   qty:15,  cat:'Long Position', date:'2026-02-14', entryT:'09:30' },
-      { stock:'SPY',   sector:'ETF',           entry_price:590,   exit_price:612,   qty:10,  cat:'Swing Trade',   date:'2026-03-05', entryT:'09:30' },
+      { stock:'AAPL', sector:'Technology',       entry_price:180,  exit_price:188,  qty:50,  cat:'Day Trade',     date:'2025-08-04', entryT:'09:30' },
+      { stock:'MSFT', sector:'Technology',       entry_price:410,  exit_price:432,  qty:12,  cat:'Swing Trade',   date:'2025-08-12', entryT:'09:30' },
+      { stock:'NVDA', sector:'Technology',       entry_price:118,  exit_price:125,  qty:80,  cat:'Day Trade',     date:'2025-08-20', entryT:'09:30' },
+      { stock:'AMD',  sector:'Technology',       entry_price:138,  exit_price:145,  qty:40,  cat:'Day Trade',     date:'2025-08-27', entryT:'09:30' }, // TUNNEL
+      { stock:'ADBE', sector:'Technology',       entry_price:480,  exit_price:510,  qty:10,  cat:'Swing Trade',   date:'2025-09-03', entryT:'09:30' }, // TUNNEL
+      { stock:'JPM',  sector:'Financials',       entry_price:210,  exit_price:203,  qty:30,  cat:'Day Trade',     date:'2025-09-15', entryT:'09:30' }, // PANIC_EXIT (-210)
+      { stock:'BAC',  sector:'Financials',       entry_price:38,   exit_price:35.5, qty:200, cat:'Day Trade',     date:'2025-09-22', entryT:'09:30' }, // REVENGE (-500)
+      { stock:'C',    sector:'Financials',       entry_price:65,   exit_price:72,   qty:100, cat:'Short Sell',    date:'2025-09-29', entryT:'09:30' }, // REVENGE, short loss (-700) WORST
+      { stock:'CVX',  sector:'Energy',           entry_price:150,  exit_price:162,  qty:40,  cat:'Swing Trade',   date:'2025-10-10', entryT:'09:30' }, // REVENGE (+480)
+      { stock:'XOM',  sector:'Energy',           entry_price:105,  exit_price:128,  qty:60,  cat:'Long Position', date:'2025-10-20', entryT:'09:30' }, // CLEAN (+1380) BEST
+      { stock:'LLY',  sector:'Healthcare',       entry_price:880,  exit_price:905,  qty:15,  cat:'Day Trade',     date:'2025-11-03', entryT:'09:30' }, // CLEAN (+375)
+      { stock:'PFE',  sector:'Healthcare',       entry_price:30,   exit_price:28.5, qty:300, cat:'Day Trade',     date:'2025-11-03', entryT:'13:15' }, // EUPHORIA + FOMO (-450, same day as LLY)
+      { stock:'KO',   sector:'Consumer Staples', entry_price:60,   exit_price:64,   qty:100, cat:'Swing Trade',   date:'2025-11-14', entryT:'09:30' }, // REVENGE (+400)
+      { stock:'NKE',  sector:'Consumer Disc',    entry_price:78,   exit_price:82,   qty:60,  cat:'Day Trade',     date:'2025-11-25', entryT:'09:30' }, // CLEAN (+240)
+      { stock:'SBUX', sector:'Consumer Disc',    entry_price:95,   exit_price:91,   qty:80,  cat:'Day Trade',     date:'2025-11-25', entryT:'14:00' }, // EUPHORIA + FOMO (-320, same day as NKE)
+      { stock:'GLD',  sector:'ETF',              entry_price:190,  exit_price:182,  qty:50,  cat:'Short Sell',    date:'2025-12-05', entryT:'09:30' }, // REVENGE, short win (+400)
     ];
 
     const holdDays = { 'Day Trade': 0, 'Short Sell': 0, 'Swing Trade': 5, 'Long Position': 30 };
@@ -81,12 +84,10 @@
       document.getElementById('log').innerHTML = '';
 
       // 1. Create or sign in as Jack
-      log('Creating Jack\'s account…');
-      let userId;
+      log('Creating Bearded Jack\'s account…');
       try {
-        const u = await account.create(ID.unique(), JACK_EMAIL, JACK_PASSWORD, 'Jack (Demo)');
-        userId = u.$id;
-        log(`✓ Account created: ${userId}`, 'ok');
+        await account.create(ID.unique(), JACK_EMAIL, JACK_PASSWORD, JACK_NAME);
+        log('✓ Account created', 'ok');
       } catch (e) {
         if (e.code === 409) {
           log('Account already exists — logging in instead…', 'inf');
@@ -98,8 +99,9 @@
       }
 
       log('Logging in as Jack…');
+      let userId;
       try {
-        try { await account.deleteSession('current'); } catch(_) {}
+        try { await account.deleteSession('current'); } catch (_) {}
         await account.createEmailPasswordSession(JACK_EMAIL, JACK_PASSWORD);
         const me = await account.get();
         userId = me.$id;
@@ -110,16 +112,32 @@
         return;
       }
 
-      // 2. Seed trades in order (order determines $createdAt, which drives chrono sort)
+      // 2. Wipe any existing trades so the portfolio is always exact
+      log('\nClearing existing trades…');
+      try {
+        const existing = await databases.listDocuments(
+          APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID, [Query.limit(100)]
+        );
+        for (const doc of existing.documents) {
+          await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID, doc.$id);
+        }
+        log(`✓ Removed ${existing.documents.length} old trade(s)`, 'ok');
+      } catch (e) {
+        log(`(skipped cleanup: ${e.message})`, 'inf');
+      }
+
+      // 3. Seed the engineered portfolio in order
       log(`\nSeeding ${TRADES.length} trades…`);
-      let ok = 0, fail = 0;
+      let ok = 0, fail = 0, running = 0;
       for (const t of TRADES) {
         const entryTime = `${t.date}T${t.entryT}:00`;
         const exitDate  = new Date(t.date);
         exitDate.setDate(exitDate.getDate() + (holdDays[t.cat] ?? 0));
         const exitTime  = `${exitDate.toISOString().slice(0, 10)}T16:00:00`;
-        const pnl       = (t.exit_price - t.entry_price) * t.qty;
-        const sign      = pnl >= 0 ? '+' : '';
+        const diff      = t.exit_price - t.entry_price;
+        const pnl       = (t.cat === 'Short Sell' ? -diff : diff) * t.qty;
+        running        += pnl;
+        const sign      = pnl >= 0 ? '+' : '-';
 
         try {
           await databases.createDocument(
@@ -138,7 +156,7 @@
             },
             [Permission.read(Role.user(userId)), Permission.write(Role.user(userId))]
           );
-          log(`  ✓ ${t.stock.padEnd(6)} ${t.cat.padEnd(14)} ${sign}$${Math.abs(pnl).toFixed(0).padStart(5)}   ${t.date}`, 'ok');
+          log(`  ✓ ${t.stock.padEnd(5)} ${t.cat.padEnd(14)} ${sign}$${Math.abs(pnl).toFixed(0).padStart(5)}   cum ${running >= 0 ? '+' : '-'}$${Math.abs(running).toFixed(0).padStart(5)}   ${t.date}`, 'ok');
           ok++;
         } catch (e) {
           log(`  ✗ ${t.stock}: ${e.message}`, 'err');
@@ -148,7 +166,8 @@
 
       log('');
       if (fail === 0) {
-        log(`✓ All ${ok} trades seeded. Open the app and use "Demo Login — Jack" to see them.`, 'ok');
+        log(`✓ All ${ok} trades seeded. Net P&L +$${running.toFixed(0)}.`, 'ok');
+        log('Open the app and use "Demo login: Bearded Jack, Amateur Investor".', 'ok');
       } else {
         log(`Done: ${ok} succeeded, ${fail} failed.`, 'err');
       }
