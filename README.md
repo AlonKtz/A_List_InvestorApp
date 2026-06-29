@@ -2,9 +2,12 @@
 
 A gamified trading journal that turns your trade history into a behavioral report card. Beginner traders lose on psychology (FOMO, panic exits, revenge trading) — not math. The A List exposes those patterns with sports-analytics-style stats.
 
-Links to meta-prompting with gemini pro and claude chat for this project first prompt:
-1- gemini: https://share.gemini.google/NcCfOQK0lGSL
-2- claude: https://claude.ai/share/c2b7af98-f704-47a2-88c4-ec274e3e48b1
+**Live app:** https://alonktz.github.io/A_List_InvestorApp/
+→ Try it instantly with the **"Demo login: Jack, Trader"** button — no signup needed.
+
+Links to meta-prompting with Gemini Pro and Claude for this project's first prompt:
+1. Gemini: https://share.gemini.google/NcCfOQK0lGSL
+2. Claude: https://claude.ai/share/c2b7af98-f704-47a2-88c4-ec274e3e48b1
 
 → [PRD](PRD.md) · [Build Tasks](tasks.md)
 
@@ -12,11 +15,14 @@ Links to meta-prompting with gemini pro and claude chat for this project first p
 
 ## What It Does
 
-- Log trades: stock ticker, sector, entry/exit price, entry/exit time
-- Behavioral metrics: Panic Exit Rate · FOMO Tax · Tilt Multiplier
-- Trade Autopsy Timeline: every trade auto-tagged with its behavioral pattern
-- Charts: sector breakdown + cumulative P&L over time
-- Per-user accounts: Supabase Auth + Row Level Security — your trades are yours only
+- **Log trades:** stock ticker, sector (auto-filled), buy/sell price, quantity, order type, trade date
+- **Live data:** ticker → sector auto-fill from a 2000+ ticker map (Finnhub fallback), plus a "Fetch Current Price" button that pulls the live quote
+- **Behavioral metrics:** Composure Rating · FOMO Tax · Tilt Multiplier
+- **Behavioral tagging:** every trade auto-tagged (`PANIC_EXIT`, `EUPHORIA_TRADE`, `REVENGE_TRADE`, `TUNNEL_VISION`, `CLEAN`)
+- **Autopsy panels:** Best & Worst Trade · Recent 3 Trades · Top Sectors by P&L
+- **Charts:** sector breakdown · cumulative P&L · behavioral breakdown
+- **Per-user accounts:** Appwrite Auth + document-level permissions — your trades are yours only
+- **Demo account:** one-click login to a pre-seeded account for reviewers
 
 ---
 
@@ -31,7 +37,9 @@ python -m http.server 8080
 # VS Code Live Server extension also works
 ```
 
-**Before opening the app**, complete the Supabase setup below and create your `config.js`.
+**Before opening the app**, complete the Appwrite setup below and create your `config.js`.
+
+> The deployed version on GitHub Pages already has a working `config.js`, so the live link works out of the box.
 
 ---
 
@@ -39,7 +47,7 @@ python -m http.server 8080
 
 ### 1. Create an Appwrite Cloud account
 
-Go to [cloud.appwrite.io](https://cloud.appwrite.io) and create a free account. The free tier supports 10 projects.
+Go to [cloud.appwrite.io](https://cloud.appwrite.io) and create a free account.
 
 ### 2. Create a project
 
@@ -47,7 +55,7 @@ In the Appwrite console, click **Create Project** and give it a name (e.g. `ALis
 
 ### 3. Add a Web platform
 
-In your project: **Overview → Add a platform → Web**. Set the hostname to `localhost` for local development (add your production domain later if deploying).
+In your project: **Overview → Add a platform → Web**. Set the hostname to `localhost` for local development. For the deployed site, add the GitHub Pages host (e.g. `alonktz.github.io`) as a second Web platform — otherwise the browser blocks the API calls with a CORS error.
 
 ### 4. Create a Database
 
@@ -67,6 +75,10 @@ Then add the following **Attributes**:
 | `exit_price` | Float | — | Yes |
 | `entry_time` | String | 30 | Yes |
 | `exit_time` | String | 30 | Yes |
+| `order_category` | String | 30 | Yes |
+| `quantity` | Integer | — | Yes |
+
+Enable **Document Security** on the collection so per-document permissions are enforced.
 
 ### 6. Set Collection Permissions
 
@@ -74,9 +86,13 @@ In the collection's **Settings → Permissions** tab, add a role:
 
 - Role: **Users** → check **Create**
 
-This allows any authenticated user to create documents. Read/update/delete permissions are set **per document** at insert time (scoped to the document owner's user ID), so no other user can access another user's trades.
+This lets any authenticated user create documents. Read/update/delete are set **per document** at insert time (scoped to the owner's user ID), so no other user can access another user's trades.
 
-### 7. Configure your keys
+### 7. Get a Finnhub API key
+
+Sign up free at [finnhub.io](https://finnhub.io) and copy your API key. It powers the "Fetch Current Price" button and the sector fallback lookup.
+
+### 8. Configure your keys
 
 Copy `config.example.js` to `config.js` and fill in your values:
 
@@ -84,16 +100,23 @@ Copy `config.example.js` to `config.js` and fill in your values:
 cp config.example.js config.js
 ```
 
-Edit `config.js`:
+`config.js` uses plain `const` declarations (loaded as a global script before `app.js`, **not** an ES module):
 
 ```js
-export const APPWRITE_ENDPOINT   = 'https://cloud.appwrite.io/v1';
-export const APPWRITE_PROJECT_ID = 'your-project-id';
-export const APPWRITE_DATABASE_ID   = 'your-database-id';
-export const APPWRITE_COLLECTION_ID = 'your-collection-id';
+const APPWRITE_ENDPOINT      = 'https://fra.cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID    = 'your-project-id';
+const APPWRITE_DATABASE_ID   = 'your-database-id';
+const APPWRITE_COLLECTION_ID = 'trades';
+const FINNHUB_API_KEY        = 'your-finnhub-api-key';
 ```
 
-`config.js` is gitignored and will never be committed. Only `config.example.js` (with placeholder values) is tracked.
+> **Note on `config.js` and secrets:** For a client-side app these values (endpoint, project/database/collection IDs) are sent with every browser request and are public by design — so `config.js` is committed so GitHub Pages can serve it. Real security comes from the Appwrite **platform allowlist** + **document-level permissions**, not from hiding these values. The Finnhub key is a free, client-exposed key.
+
+---
+
+## Seeding the Demo Account
+
+`seed-jack.html` is a one-off utility page that creates the demo user (`jack@alist.demo`) and inserts 17 sample trades. Open it once in a browser (with a valid `config.js` present) and click **Run Seeder**. Afterwards the "Demo login: Jack, Trader" button on the main page logs straight in.
 
 ---
 
@@ -101,10 +124,13 @@ export const APPWRITE_COLLECTION_ID = 'your-collection-id';
 
 ```
 AList_App/
-├── index.html          # Single-page app shell
-├── app.js              # Main JS — auth, trade logic, metrics, charts
-├── config.js           # Your Supabase keys (gitignored)
-├── config.example.js   # Committed template with placeholder values
+├── index.html          # Single-page app shell (auth / dashboard / log trade)
+├── app.js              # Main JS — auth, trade logic, metrics, tags, charts
+├── sectors.js          # 2000+ ticker → sector map
+├── design.css          # Liquid-glass design system (token-based)
+├── config.js           # Appwrite + Finnhub config (committed; see note above)
+├── config.example.js   # Template with placeholder values
+├── seed-jack.html      # One-off demo-account seeder
 ├── PRD.md              # Product requirements
 ├── tasks.md            # Build checklist (one task = one commit)
 └── README.md           # This file
@@ -112,15 +138,22 @@ AList_App/
 
 ---
 
+## Data Sources
+
+- **Appwrite Cloud** — user accounts (Auth) and trade storage (Database). All trade documents are scoped to their owner via document-level permissions.
+- **Finnhub API** — `/quote` for the live "Fetch Current Price" feature; `/stock/profile2` as a sector fallback for tickers not in `sectors.js`.
+
+---
+
 ## Known Limits
 
-- Add-only trades — the user can edit them and \ or delete in this version
-- Behavioral metrics require at least 4–5 trades to produce meaningful output
-- For real time data and stock prices we should use a CORS-proxied yahoo finance fetch or eal time mock price simoulator.
-- Optimized for mobile on the highest standart
+- Trades are add-and-delete only — there is no in-place edit.
+- Behavioral metrics need at least ~4–5 trades to produce meaningful output.
+- Only the *current* live price is available (free Finnhub tier); historical intraday backfill is not supported.
+- Responsive layout is functional but tuned primarily for desktop.
 
 ---
 
 ## Stack
 
-HTML5 · Tailwind CSS (CDN) · Vanilla JS (ES modules) · Chart.js (CDN) · Appwrite Cloud (Database + Auth)
+HTML5 · Tailwind CSS (CDN) · Vanilla JS (plain scripts, no bundler) · Chart.js (CDN) · Appwrite Cloud (Database + Auth) · Finnhub API · GitHub Pages

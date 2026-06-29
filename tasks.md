@@ -68,8 +68,39 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 
 ## Phase 9 — Design
 
-- [ ] **T23** — Design inspiration: choose color palette / visual direction
-- [ ] **T24** — Implement final design
+- [x] **T23** — Design inspiration: choose color palette / visual direction (liquid-glass system)
+- [x] **T24** — Implement final design: `design.css` token system, aurora backdrop, glass cards
+
+---
+
+## Phase 10 — Live Market Data & Sectors
+
+- [x] **T25** — Finnhub live price fetch: "Fetch Current Price" button on the log-trade form
+- [x] **T26** — Top Sectors panel: split the autopsy row, right half shows top 2 sectors by P&L
+- [x] **T27** — Add Date column to the trade history table
+- [x] **T28** — Expand stock universe: 2000+ tickers in `sectors.js` + Finnhub profile fallback for unknown tickers
+
+---
+
+## Phase 11 — Trade Autopsy Redesign
+
+- [x] **T29** — Trade autopsy: flex-wrap dots to fill the card space (interim)
+- [x] **T30** — Replace autopsy timeline with Best/Worst Trade + Recent 3 Trades panels
+
+---
+
+## Phase 12 — Demo Account & Deployment
+
+- [x] **T31** — Add "Demo login" button + `seed-jack.html` to create and populate Jack's demo account (17 trades)
+- [x] **T32** — Commit `config.js` so GitHub Pages can serve credentials (client-side public values)
+- [x] **T33** — Simplify demo button text → "Demo login: Jack, Trader"
+
+---
+
+## Phase 13 — Documentation Sync
+
+- [x] **T34** — Sync `PRD.md` with the shipped app
+- [x] **T35** — Sync `tasks.md` and `README.md` with the shipped app
 
 ---
 
