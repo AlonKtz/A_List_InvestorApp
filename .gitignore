@@ -1,3 +1,6 @@
 # config.js is committed intentionally — for a client-side Appwrite app these
 # values (endpoint, project/db/collection IDs) are public by design. Security
 # is enforced by the Appwrite platform allowlist + document permissions.
+
+# Personal presentation material — not part of the deliverable
+project speech - hebrew.docx
