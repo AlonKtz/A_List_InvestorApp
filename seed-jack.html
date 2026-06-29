@@ -33,7 +33,8 @@
     const databases = new Databases(client);
 
     const JACK_EMAIL    = 'jack@alist.demo';
-    const JACK_PASSWORD = 'DemoJack123!';
+    const JACK_PASSWORD = 'DemoJack2026';   // letters + numbers only (matches signup policy)
+    const OLD_PASSWORD  = 'DemoJack123!';   // previous value — migrated on first re-run
     const JACK_NAME     = 'Bearded Jack';
 
     // ── Portfolio engineered to maximize every dashboard feature ──
@@ -102,7 +103,14 @@
       let userId;
       try {
         try { await account.deleteSession('current'); } catch (_) {}
-        await account.createEmailPasswordSession(JACK_EMAIL, JACK_PASSWORD);
+        try {
+          await account.createEmailPasswordSession(JACK_EMAIL, JACK_PASSWORD);
+        } catch (_) {
+          // Existing account may still hold the old password — log in and migrate it
+          await account.createEmailPasswordSession(JACK_EMAIL, OLD_PASSWORD);
+          await account.updatePassword(JACK_PASSWORD, OLD_PASSWORD);
+          log('↻ Migrated demo password to the new policy-compliant value', 'inf');
+        }
         const me = await account.get();
         userId = me.$id;
         log(`✓ Signed in — user ID: ${userId}`, 'ok');

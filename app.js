@@ -7,6 +7,13 @@ function calcPnl(t) {
   return t.order_category === 'Short Sell' ? -diff * qty : diff * qty;
 }
 
+// ── HTML escape — XSS guard for any user- or API-sourced string rendered via innerHTML ──
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
 // ── Client ──
 const client = new Client()
   .setEndpoint(APPWRITE_ENDPOINT)
@@ -63,6 +70,19 @@ formSignup.addEventListener('submit', async (e) => {
   const errEl    = document.getElementById('signup-error');
   const btn      = formSignup.querySelector('button[type="submit"]');
   errEl.classList.add('hidden');
+
+  // Password policy: letters and numbers only — no spaces or symbols
+  if (password.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  if (!/^[A-Za-z0-9]+$/.test(password)) {
+    errEl.textContent = 'Password can only contain letters and numbers — no spaces or symbols.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
   btn.disabled = true; btn.textContent = 'Creating account…';
 
   try {
@@ -79,7 +99,7 @@ formSignup.addEventListener('submit', async (e) => {
 // ── Demo Login — Jack ──
 document.getElementById('btn-demo-jack').addEventListener('click', () => {
   document.getElementById('login-email').value    = 'jack@alist.demo';
-  document.getElementById('login-password').value = 'DemoJack123!';
+  document.getElementById('login-password').value = 'DemoJack2026';
   tabLogin.click();
   formLogin.requestSubmit();
 });
@@ -435,8 +455,8 @@ function renderBestWorst(chrono) {
     </div>`;
 
   el.innerHTML =
-    row('🏆', best.stock,  bp, 'var(--gain)', '+', bd) +
-    row('💀', worst.stock, wp, 'var(--loss)', '-', wd);
+    row('🏆', esc(best.stock),  bp, 'var(--gain)', '+', bd) +
+    row('💀', esc(worst.stock), wp, 'var(--loss)', '-', wd);
 }
 
 // ── Recent 3 Trades ──
@@ -461,7 +481,7 @@ function renderRecentTrades(chrono, tagMap) {
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;${border}">
         <div>
-          <span style="font-weight:800;font-size:15px;color:var(--text-primary)">${t.stock}</span>
+          <span style="font-weight:800;font-size:15px;color:var(--text-primary)">${esc(t.stock)}</span>
           <span style="color:var(--text-faint);font-size:11px;margin-left:7px">${date}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -508,7 +528,7 @@ function renderTopSectors(chrono) {
     return `
       <div class="glass-card-nested" style="padding:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <span style="font-weight:700;color:var(--text-primary)">${medals[i]} ${sector}</span>
+          <span style="font-weight:700;color:var(--text-primary)">${medals[i]} ${esc(sector)}</span>
           <span style="font-weight:900;color:${pnlColor}">${pnlSign}$${Math.abs(s.total).toFixed(2)}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:8px">
@@ -604,14 +624,14 @@ function renderTable(trades, tagMap = {}) {
 
     return `
       <tr>
-        <td style="font-weight:700">${t.stock}</td>
+        <td style="font-weight:700">${esc(t.stock)}</td>
         <td style="color:var(--text-muted);font-size:13px">${date}</td>
-        <td style="color:var(--text-muted);font-size:13px">${t.sector}</td>
+        <td style="color:var(--text-muted);font-size:13px">${esc(t.sector)}</td>
         <td style="color:var(--text-emphasis)">${t.quantity || 1}</td>
         <td>$${parseFloat(t.entry_price).toFixed(2)}</td>
         <td>$${parseFloat(t.exit_price).toFixed(2)}</td>
         <td style="font-weight:700;color:${pColor}">${pSign}$${Math.abs(p).toFixed(2)}</td>
-        <td><span class="cat-badge ${catCls}">${t.order_category || '—'}</span></td>
+        <td><span class="cat-badge ${catCls}">${esc(t.order_category) || '—'}</span></td>
         <td>${tagMeta ? `<span class="tag-badge ${tagMeta.cls}">${tagMeta.label}</span>` : '<span style="color:var(--text-faint);font-size:11px">—</span>'}</td>
         <td><button class="delete-btn btn-delete" data-id="${t.$id}">✕</button></td>
       </tr>`;
