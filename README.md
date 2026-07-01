@@ -3,7 +3,7 @@
 A gamified trading journal that turns your trade history into a behavioral report card. Beginner traders lose on psychology (FOMO, panic exits, revenge trading) — not math. The A List exposes those patterns with sports-analytics-style stats.
 
 **Live app:** https://alonktz.github.io/A_List_InvestorApp/
-→ Try it instantly with the **"Demo login: Jack, Trader"** button — no signup needed.
+→ Try it instantly with the **"Demo login: Bearded Jack, Amateur Investor"** button — no signup needed.
 
 Links to meta-prompting with Gemini Pro and Claude for this project's first prompt:
 1. Gemini: https://share.gemini.google/NcCfOQK0lGSL
@@ -28,7 +28,9 @@ Links to meta-prompting with Gemini Pro and Claude for this project's first prom
 
 ## Running the App
 
-No build step. No npm. Open `index.html` directly in a browser, or serve it with any static file server:
+**It's already live** — just open the [live app](https://alonktz.github.io/A_List_InvestorApp/). Nothing to install.
+
+To run it locally, clone the repo and serve the folder with any static file server (no build step, no npm):
 
 ```bash
 # Python (built-in)
@@ -37,13 +39,13 @@ python -m http.server 8080
 # VS Code Live Server extension also works
 ```
 
-**Before opening the app**, complete the Appwrite setup below and create your `config.js`.
-
-> The deployed version on GitHub Pages already has a working `config.js`, so the live link works out of the box.
+`config.js` is committed with the repo, so a fresh clone runs against the same Appwrite backend out of the box — no setup needed just to try it. **Only if you want to point it at your own Appwrite project** do you need the setup below (create the resources, then edit the values in `config.js`).
 
 ---
 
 ## Appwrite Setup
+
+> **Optional** — only needed if you're pointing the app at your *own* Appwrite project. The committed `config.js` already targets a working backend, so you can skip this just to try the app.
 
 ### 1. Create an Appwrite Cloud account
 
@@ -116,7 +118,7 @@ const FINNHUB_API_KEY        = 'your-finnhub-api-key';
 
 ## Seeding the Demo Account
 
-`seed-jack.html` is a one-off utility page that creates the demo user (`jack@alist.demo`) and inserts 17 sample trades. Open it once in a browser (with a valid `config.js` present) and click **Run Seeder**. Afterwards the "Demo login: Jack, Trader" button on the main page logs straight in.
+`seed-jack.html` is a one-off utility page that creates the demo user `jack@alist.demo` ("Bearded Jack, Amateur Investor") and inserts a **16-trade portfolio engineered to exercise every dashboard feature** — all five behavioral tags, all four order types, a clear best/worst, FOMO pairs, and a volatile-but-rising P&L curve. Open it once in a browser (with a valid `config.js` present) and click **Run Seeder**; it wipes any existing trades first, so re-running always yields the exact same portfolio. Afterwards the "Demo login: Bearded Jack, Amateur Investor" button on the main page logs straight in.
 
 ---
 
@@ -147,6 +149,7 @@ AList_App/
 
 ## Known Limits
 
+- Sign-up passwords must be **letters and numbers only**, minimum 8 characters (no spaces or symbols).
 - Trades are add-and-delete only — there is no in-place edit.
 - Behavioral metrics need at least ~4–5 trades to produce meaningful output.
 - Only the *current* live price is available (free Finnhub tier); historical intraday backfill is not supported.
