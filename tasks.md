@@ -104,6 +104,28 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 
 ---
 
+## Phase 14 — Demo Polish & Repo Hygiene
+
+- [x] **T36** — Redesign demo user "Bearded Jack, Amateur Investor": 16-trade portfolio engineered to exercise every dashboard feature; seeder wipes old trades on re-run
+- [x] **T37** — Gitignore personal Hebrew speech doc (presentation material, not a deliverable)
+- [x] **T38** — Gitignore design-system handoff folder (source reference, not part of the app)
+
+---
+
+## Phase 15 — Security Hardening
+
+- [x] **T39** — `esc()` HTML-escape on all user/API strings rendered via innerHTML (XSS guard); signup password policy (letters + numbers only); rotate demo password with seeder migration
+- [x] **T40** — Make logout resilient — always reload to login screen even if `deleteSession` fails (guest)
+
+---
+
+## Phase 16 — Final Documentation Pass
+
+- [x] **T41** — Fix README drift: remove `config.js` contradiction, update demo to Bearded Jack + 16 trades, mark Appwrite setup optional, document password policy
+- [x] **T42** — Fix PRD stale demo-name references + add missing tasks T36–T41 to `tasks.md`
+
+---
+
 ## Completion Gate
 
 All tasks checked + all commits pushed + Definition of Done verified = project complete.

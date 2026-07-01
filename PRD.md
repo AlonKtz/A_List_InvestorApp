@@ -14,7 +14,7 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 
 ### In Scope (MVP)
 - User accounts: sign-up, login, logout via **Appwrite Auth** (email/password)
-- **Demo account** — a one-click "Demo login: Jack, Trader" button that signs into a pre-seeded account so reviewers can explore the app with real data instantly
+- **Demo account** — a one-click "Demo login: Bearded Jack, Amateur Investor" button that signs into a pre-seeded account so reviewers can explore the app with real data instantly
 - Session-gated dashboard — unauthenticated users see only the login/signup screen
 - Trade log form: Stock ticker, Sector (auto-filled), Buy Price, Sell Price, Quantity, Order Type, Trade Date
 - **Ticker → sector auto-fill** from a bundled 2000+ ticker map (`sectors.js`), with a Finnhub profile API fallback for unknown tickers
@@ -48,7 +48,7 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 |----|-------|
 | U01 | As a new user, I can sign up with email + password so I have a personal account. |
 | U02 | As a returning user, I can log in and see only my own trades. |
-| U03 | As a reviewer, I can click "Demo login: Jack, Trader" to instantly explore a pre-populated account. |
+| U03 | As a reviewer, I can click "Demo login: Bearded Jack, Amateur Investor" to instantly explore a pre-populated account. |
 | U04 | As a logged-in user, I can log a trade (ticker, sector, prices, quantity, order type, date) so it persists to the database. |
 | U05 | As a logged-in user, the sector auto-fills from the ticker, and I can fetch the live price with one click. |
 | U06 | As a logged-in user, I can view all my past trades in a table, newest first, and delete any of them. |
