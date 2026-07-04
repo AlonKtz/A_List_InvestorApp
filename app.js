@@ -114,6 +114,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 const ROUTES = {
   dashboard: { view: 'view-dashboard', nav: 'nav-dashboard', onEnter: () => loadTrades() },
   log:       { view: 'view-log',       nav: 'nav-log' },
+  watchlist: { view: 'view-watchlist', nav: 'nav-watchlist', onEnter: () => loadWatchlist() },
 };
 
 function router() {
@@ -673,5 +674,157 @@ document.getElementById('trades-table-body').addEventListener('click', async (e)
     btn.disabled = false;
   }
 });
+
+// ══════════════════════════════════════════════════════════════
+//  WATCHLIST — track tickers with live Finnhub quotes
+// ══════════════════════════════════════════════════════════════
+let watchItems = [];
+
+async function loadWatchlist() {
+  const body = document.getElementById('watchlist-body');
+  body.innerHTML = '<tr><td colspan="6" style="padding:40px 0;text-align:center;color:var(--text-faint)">Loading…</td></tr>';
+  try {
+    const res = await databases.listDocuments(
+      APPWRITE_DATABASE_ID, APPWRITE_WATCHLIST_COLLECTION_ID,
+      [Query.orderDesc('$createdAt'), Query.limit(100)]
+    );
+    watchItems = res.documents;
+    renderWatchlist();
+    refreshWatchlistPrices();
+  } catch (err) {
+    body.innerHTML = `<tr><td colspan="6" style="padding:24px 0;text-align:center;color:var(--loss)">${esc(err.message)}</td></tr>`;
+  }
+}
+
+function renderWatchlist() {
+  const body = document.getElementById('watchlist-body');
+  if (!watchItems.length) {
+    body.innerHTML = '<tr><td colspan="6" style="padding:40px 0;text-align:center;color:var(--text-faint)">No tickers yet — add one above.</td></tr>';
+    return;
+  }
+  body.innerHTML = watchItems.map(w => `
+    <tr data-id="${w.$id}" data-symbol="${esc(w.symbol)}">
+      <td style="font-weight:700">${esc(w.symbol)}</td>
+      <td style="color:var(--text-muted);font-size:13px">${esc(w.sector || 'Other')}</td>
+      <td class="w-price" style="font-weight:700">—</td>
+      <td class="w-change" style="font-weight:700">—</td>
+      <td class="w-updated" style="color:var(--text-faint);font-size:12px">—</td>
+      <td style="white-space:nowrap;text-align:right">
+        <button class="btn-fetch w-log" data-symbol="${esc(w.symbol)}" style="padding:5px 12px;font-size:12px">Log trade</button>
+        <button class="delete-btn btn-delete w-delete" data-id="${w.$id}" style="margin-left:6px">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function refreshWatchlistPrices() {
+  const rows = document.querySelectorAll('#watchlist-body tr[data-symbol]');
+  await Promise.all([...rows].map(async row => {
+    const symbol   = row.dataset.symbol;
+    const priceEl  = row.querySelector('.w-price');
+    const changeEl = row.querySelector('.w-change');
+    const updEl    = row.querySelector('.w-updated');
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`);
+      const d   = await res.json();
+      if (!d.c) { priceEl.textContent = 'n/a'; return; }
+      priceEl.textContent  = `$${d.c.toFixed(2)}`;
+      const dp   = d.dp ?? 0;
+      changeEl.textContent = `${dp >= 0 ? '+' : ''}${dp.toFixed(2)}%`;
+      changeEl.style.color = dp >= 0 ? 'var(--gain)' : 'var(--loss)';
+      updEl.textContent = d.t
+        ? new Date(d.t * 1000).toLocaleTimeString('he-IL', { timeZone: 'Asia/Jerusalem', hour12: false })
+        : '';
+    } catch {
+      priceEl.textContent = 'err';
+    }
+  }));
+}
+
+// Sector auto-fill for the watchlist ticker input
+let _watchSectorDebounce = null;
+document.getElementById('watch-stock').addEventListener('input', (e) => {
+  const ticker = e.target.value.trim().toUpperCase();
+  const badge  = document.getElementById('watch-sector-badge');
+  const hidden = document.getElementById('watch-sector');
+  if (!ticker) { badge.textContent = 'Sector will auto-fill'; badge.classList.remove('filled'); hidden.value = ''; return; }
+  if (SECTOR_MAP[ticker]) { badge.textContent = SECTOR_MAP[ticker]; badge.classList.add('filled'); hidden.value = SECTOR_MAP[ticker]; clearTimeout(_watchSectorDebounce); return; }
+  badge.textContent = 'Looking up…'; badge.classList.remove('filled'); hidden.value = 'Other';
+  clearTimeout(_watchSectorDebounce);
+  _watchSectorDebounce = setTimeout(async () => {
+    if (document.getElementById('watch-stock').value.trim().toUpperCase() !== ticker) return;
+    try {
+      const res  = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(ticker)}&token=${FINNHUB_API_KEY}`);
+      const data = await res.json();
+      const sector = data.finnhubIndustry || null;
+      if (sector) { SECTOR_MAP[ticker] = sector; badge.textContent = sector; badge.classList.add('filled'); hidden.value = sector; }
+      else { badge.textContent = 'Unknown ticker'; hidden.value = 'Other'; }
+    } catch { badge.textContent = 'Other'; hidden.value = 'Other'; }
+  }, 600);
+});
+
+// Add ticker to watchlist
+document.getElementById('form-watchlist').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl  = document.getElementById('watch-error');
+  errEl.classList.add('hidden');
+  const symbol = document.getElementById('watch-stock').value.trim().toUpperCase();
+  const sector = document.getElementById('watch-sector').value || SECTOR_MAP[symbol] || 'Other';
+  if (!symbol) return;
+  if (watchItems.some(w => w.symbol === symbol)) {
+    errEl.textContent = `${symbol} is already on your watchlist.`;
+    errEl.classList.remove('hidden');
+    return;
+  }
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const user = await account.get();
+    await databases.createDocument(
+      APPWRITE_DATABASE_ID, APPWRITE_WATCHLIST_COLLECTION_ID, ID.unique(),
+      { symbol, sector },
+      [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
+    );
+    e.target.reset();
+    const badge = document.getElementById('watch-sector-badge');
+    badge.textContent = 'Sector will auto-fill'; badge.classList.remove('filled');
+    await loadWatchlist();
+  } catch (err) {
+    errEl.textContent = err.message; errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Add';
+  }
+});
+
+// Row actions: delete + "Log trade" shortcut
+document.getElementById('watchlist-body').addEventListener('click', async (e) => {
+  const del = e.target.closest('.w-delete');
+  const log = e.target.closest('.w-log');
+
+  if (del) {
+    if (!confirm('Remove from watchlist?')) return;
+    del.textContent = '…'; del.disabled = true;
+    try {
+      await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_WATCHLIST_COLLECTION_ID, del.dataset.id);
+      watchItems = watchItems.filter(w => w.$id !== del.dataset.id);
+      renderWatchlist();
+      refreshWatchlistPrices();
+    } catch (err) {
+      alert('Could not remove: ' + err.message);
+      del.textContent = '✕'; del.disabled = false;
+    }
+    return;
+  }
+
+  if (log) {
+    // Jump to the log form pre-filled with this ticker + its live price
+    location.hash = '#/log';
+    const stockInput = document.getElementById('trade-stock');
+    stockInput.value = log.dataset.symbol;
+    stockInput.dispatchEvent(new Event('input')); // triggers sector auto-fill
+    document.getElementById('btn-fetch-price').click(); // pulls live price into Buy field
+  }
+});
+
+document.getElementById('btn-refresh-watchlist').addEventListener('click', () => refreshWatchlistPrices());
 
 init();

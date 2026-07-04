@@ -80,6 +80,7 @@
       <div class="flex items-center gap-2">
         <button id="nav-dashboard" class="btn-nav active">Dashboard</button>
         <button id="nav-log" class="btn-nav inactive">+ Log Trade</button>
+        <button id="nav-watchlist" class="btn-nav inactive">Watchlist</button>
         <button id="btn-logout" class="btn-danger-nav" style="margin-left:12px">Logout</button>
       </div>
     </nav>
@@ -272,6 +273,47 @@
 
           </form>
         </div>
+      </div>
+    </div>
+
+    <!-- WATCHLIST VIEW -->
+    <div id="view-watchlist" class="hidden flex-1 p-6 space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="wordmark" style="font-size:28px;margin:0">Watchlist</h2>
+        <button id="btn-refresh-watchlist" class="btn-fetch">↻ Refresh Prices</button>
+      </div>
+
+      <!-- Add ticker -->
+      <div class="glass-card p-6">
+        <form id="form-watchlist" class="flex flex-wrap gap-3 items-center">
+          <input type="text" id="watch-stock" required placeholder="Add ticker (e.g. AAPL)" maxlength="8" class="glass-input ticker" style="max-width:220px">
+          <span style="color:var(--text-faint);font-size:18px">→</span>
+          <span id="watch-sector-badge" class="sector-badge-display">Sector will auto-fill</span>
+          <input type="hidden" id="watch-sector">
+          <button type="submit" class="btn btn-primary" style="width:auto;padding:12px 24px">Add</button>
+        </form>
+        <p id="watch-error" class="hidden" style="color:var(--loss);font-size:13px;margin:10px 0 0"></p>
+      </div>
+
+      <!-- Tracked tickers -->
+      <div class="glass-card p-6 overflow-x-auto">
+        <p class="eyebrow">Tracked Tickers</p>
+        <p style="color:var(--text-faint);font-size:11px;margin:0 0 12px">Live quotes from Finnhub · click a row's <span style="color:var(--text-secondary)">Log trade</span> to open the form pre-filled</p>
+        <table class="ds-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Sector</th>
+              <th>Price</th>
+              <th>Day %</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="watchlist-body">
+            <tr><td colspan="6" style="padding:40px 0;text-align:center;color:var(--text-faint)">Loading…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
