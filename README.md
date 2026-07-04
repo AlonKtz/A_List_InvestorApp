@@ -21,6 +21,7 @@ Links to meta-prompting with Gemini Pro and Claude for this project's first prom
 - **Behavioral tagging:** every trade auto-tagged (`PANIC_EXIT`, `EUPHORIA_TRADE`, `REVENGE_TRADE`, `TUNNEL_VISION`, `CLEAN`)
 - **Autopsy panels:** Best & Worst Trade · Recent 3 Trades · Top Sectors by P&L
 - **Charts:** sector breakdown · cumulative P&L · behavioral breakdown
+- **Watchlist:** a separate hash-routed page (`#/watchlist`) to track tickers with live Finnhub quotes, plus a one-click "Log trade" shortcut that prefills the form
 - **Per-user accounts:** Appwrite Auth + document-level permissions — your trades are yours only
 - **Demo account:** one-click login to a pre-seeded account for reviewers
 
@@ -90,6 +91,15 @@ In the collection's **Settings → Permissions** tab, add a role:
 
 This lets any authenticated user create documents. Read/update/delete are set **per document** at insert time (scoped to the owner's user ID), so no other user can access another user's trades.
 
+Then create a **second collection** with custom ID **`watchlist`** (for the Watchlist page), with these attributes:
+
+| Key | Type | Size | Required |
+|-----|------|------|----------|
+| `symbol` | String | 10 | Yes |
+| `sector` | String | 50 | Yes |
+
+Enable **Document Security** on it too, and grant **Users → Create** — identical to `trades`.
+
 ### 7. Get a Finnhub API key
 
 Sign up free at [finnhub.io](https://finnhub.io) and copy your API key. It powers the "Fetch Current Price" button and the sector fallback lookup.
@@ -109,6 +119,7 @@ const APPWRITE_ENDPOINT      = 'https://fra.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID    = 'your-project-id';
 const APPWRITE_DATABASE_ID   = 'your-database-id';
 const APPWRITE_COLLECTION_ID = 'trades';
+const APPWRITE_WATCHLIST_COLLECTION_ID = 'watchlist';
 const FINNHUB_API_KEY        = 'your-finnhub-api-key';
 ```
 
@@ -143,7 +154,7 @@ AList_App/
 ## Data Sources
 
 - **Appwrite Cloud** — user accounts (Auth) and trade storage (Database). All trade documents are scoped to their owner via document-level permissions.
-- **Finnhub API** — `/quote` for the live "Fetch Current Price" feature; `/stock/profile2` as a sector fallback for tickers not in `sectors.js`.
+- **Finnhub API** — `/quote` for the live "Fetch Current Price" feature and the Watchlist page's live quotes; `/stock/profile2` as a sector fallback for tickers not in `sectors.js`.
 
 ---
 

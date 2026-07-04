@@ -126,6 +126,14 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 
 ---
 
+## Phase 17 — Multi-View & Watchlist
+
+- [x] **T43** — Hash-based routing (`#/dashboard`, `#/log`) — real shareable URLs per view
+- [x] **T44** — Watchlist feature: new `#/watchlist` view, Appwrite `watchlist` collection (per-user perms), live Finnhub quotes + refresh, sector auto-fill, "Log trade" prefill shortcut
+- [x] **T45** — Sync `PRD.md`, `README.md`, `tasks.md` for routing + watchlist (collection, user story, setup step, config field)
+
+---
+
 ## Completion Gate
 
 All tasks checked + all commits pushed + Definition of Done verified = project complete.

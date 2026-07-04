@@ -29,6 +29,8 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 - **Trade Autopsy panels** — Best & Worst Trade, Recent 3 Trades, and Top 2 Sectors by P&L
 - Charts (Chart.js): Trades by Sector (bar), Cumulative P&L (line), Behavioral Breakdown (pie, tag distribution)
 - **Liquid-glass design system** — aurora backdrop, translucent glass cards, custom CSS token system
+- **Watchlist** (`#/watchlist`) — a separate view to track tickers you *don't* own yet, with live Finnhub quotes (price + day %), add/remove, and a one-click **"Log trade"** shortcut that jumps to the trade form pre-filled with the ticker and its live price
+- **Hash-based routing** — real per-view URLs (`#/dashboard`, `#/log`, `#/watchlist`) that survive a refresh and can be bookmarked/shared
 - Deployed live on **GitHub Pages**
 
 ### Out of Scope
@@ -37,7 +39,7 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 - Historical intraday price backfill (free API tiers only provide the *current* quote)
 - Social features, sharing, leaderboards
 - Email confirmation / true 2FA flow (plain email + password only)
-- Multi-page routing (single HTML file, tab-based view switching)
+- Server-side routing / separate HTML files (views are hash-routed client-side within one `index.html`)
 - Notes/journal text field per trade
 
 ---
@@ -56,6 +58,7 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 | U08 | As a logged-in user, I can see my best/worst trade, recent trades, and most profitable sectors. |
 | U09 | As a logged-in user, I can view sector, P&L, and behavioral-breakdown charts to spot patterns. |
 | U10 | As a logged-in user, I can log out and have my session terminated. |
+| U11 | As a logged-in user, I can keep a watchlist of tickers with live prices, and jump straight to logging a trade from any of them. |
 
 ---
 
@@ -65,6 +68,7 @@ Beginner-to-intermediate retail trader (18–35). Has a brokerage account, is lo
 |---------|--------|--------|
 | UI | HTML5 + Tailwind CSS (CDN) + custom `design.css` | No build step; rapid styling + bespoke glass design system |
 | Logic | Vanilla JS (plain `<script>` tags, no modules/bundler) | No framework or build overhead; fits the no-npm constraint |
+| Routing | Hash-based client-side router (`hashchange`) | Real per-view URLs with no build step or server config |
 | Charts | Chart.js (CDN) | Simple, well-documented; enough for bar + line + pie |
 | Backend / DB | Appwrite Cloud (Database + Auth) | Real accounts, document-level permissions, hosted — no backend code to write |
 | Appwrite client | IIFE CDN build (`appwrite/dist/iife/sdk.js`) | Loads as a plain global script — no ES module setup needed |
@@ -106,6 +110,17 @@ Created in the Appwrite console under a Database. Attributes are defined per-fie
 - Metric aggregates (Composure, FOMO Tax, Tilt) — computed across the user's trade set
 
 **Sectors:** the 11 GICS sectors + ETF, mapped from ticker via `sectors.js` (2000+ tickers), with a Finnhub profile fallback for anything not in the map.
+
+### Appwrite Collection: `watchlist`
+
+A second collection for tracked tickers (no trade data). Same per-user document-permission model as `trades`.
+
+| Attribute | Type | Required |
+|-----------|------|----------|
+| `symbol` | String (10) | Yes |
+| `sector` | String (50) | Yes |
+
+Live price and day-change % are **not stored** — they're fetched on demand from the Finnhub `/quote` endpoint each time the view loads or the user hits Refresh.
 
 ---
 
