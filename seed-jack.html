@@ -20,7 +20,7 @@
 </head>
 <body>
   <h1>Seed Bearded Jack's Demo Account</h1>
-  <p>Creates the demo user "Bearded Jack, Amateur Investor" and populates a portfolio engineered to exercise every app feature, plus a 6-ticker watchlist. Re-running wipes his existing trades and watchlist first, so the result is always the same clean demo.</p>
+  <p>Creates the demo user "Bearded Jack, Amateur Investor" and populates a 26-trade portfolio engineered so the behavioral metrics light up — Composure ≈25 (panic day-trade exits), FOMO Tax ≈-$2,070 (same-day chasers), Tilt ≈1.4× (loss-after-loss) — plus a 6-ticker watchlist. Re-running wipes his existing trades and watchlist first, so the result is always the same clean demo.</p>
   <button id="run">▶ Run Seeder</button>
   <div id="log"></div>
 
@@ -37,38 +37,45 @@
     const OLD_PASSWORD  = 'DemoJack123!';   // previous value — migrated on first re-run
     const JACK_NAME     = 'Bearded Jack';
 
-    // ── Portfolio engineered to maximize every dashboard feature ──
+    // ── 26-trade portfolio engineered to populate the behavioral metrics ──
     // Seeded in chronological order (chrono sort = $createdAt = insertion order).
-    // Tags are auto-derived by app.js from the sequence. The design hits all of:
-    //   • All 5 behavioral tags in the pie:
-    //       CLEAN ×6, TUNNEL_VISION ×2, PANIC_EXIT ×1, REVENGE_TRADE ×5, EUPHORIA_TRADE ×2
-    //   • All 4 order types (Day Trade, Swing Trade, Long Position, Short Sell)
-    //   • Short Sell shown both losing (idx7) and winning (idx15)
-    //   • Composure ~56 (warn): 4 of 9 day trades lost
-    //   • FOMO Tax = $770 across 2 same-day chaser losses (idx11, idx14)
-    //   • Tilt Multiplier ~1.38× (danger): escalating losses idx5→6→7
-    //   • Best trade  +$1380 (XOM, idx9) · Worst trade  -$700 (C short, idx7)
-    //   • Top Sectors: Energy (+1860) & Technology (+1804)
-    //   • Cumulative P&L: rises, craters mid-run on the Financials cluster, recovers to +$2899
-    // idx: 0   1   2   3(TUN) 4(TUN) 5(PANIC) 6(REV) 7(REV/worst) 8(REV)
-    //      9(best/CLEAN) 10 11(EUPH/FOMO) 12(REV) 13 14(EUPH/FOMO) 15(REV/short win)
+    // Metrics are computed from the SEQUENCE, so losses are placed deliberately.
+    // 15 of the 26 trades demonstrate a behavioral relation:
+    //   • Composure (day-trade loss = "bailing when red"): idx 1,3,4,6,7,12,13,17,18,20,21,22
+    //       → 12 of 16 day trades lost → Composure ≈ 25 (red)
+    //   • FOMO Tax (loss entered SAME DAY as a prior winner): idx 1,3,6,9,12,17,20,24
+    //       → 8 chaser losses (each preceded by a same-day win)
+    //   • Tilt (loss right after a prior loss, and BIGGER): idx 4,7,10,13,18,21,22
+    //       → avg post-loss loss ≈ $551 vs avg loss ≈ $395 → Tilt ≈ 1.4× (red)
+    //   • All 4 order types; 9 sectors; net P&L ≈ -$280 (near breakeven, bled by behavior)
+    // Legend: (F)=FOMO loss  (T)=tilt loss  (D)=day-trade loss  (W)=win
     const TRADES = [
-      { stock:'AAPL', sector:'Technology',       entry_price:180,  exit_price:188,  qty:50,  cat:'Day Trade',     date:'2025-08-04', entryT:'09:30' },
-      { stock:'MSFT', sector:'Technology',       entry_price:410,  exit_price:432,  qty:12,  cat:'Swing Trade',   date:'2025-08-12', entryT:'09:30' },
-      { stock:'NVDA', sector:'Technology',       entry_price:118,  exit_price:125,  qty:80,  cat:'Day Trade',     date:'2025-08-20', entryT:'09:30' },
-      { stock:'AMD',  sector:'Technology',       entry_price:138,  exit_price:145,  qty:40,  cat:'Day Trade',     date:'2025-08-27', entryT:'09:30' }, // TUNNEL
-      { stock:'ADBE', sector:'Technology',       entry_price:480,  exit_price:510,  qty:10,  cat:'Swing Trade',   date:'2025-09-03', entryT:'09:30' }, // TUNNEL
-      { stock:'JPM',  sector:'Financials',       entry_price:210,  exit_price:203,  qty:30,  cat:'Day Trade',     date:'2025-09-15', entryT:'09:30' }, // PANIC_EXIT (-210)
-      { stock:'BAC',  sector:'Financials',       entry_price:38,   exit_price:35.5, qty:200, cat:'Day Trade',     date:'2025-09-22', entryT:'09:30' }, // REVENGE (-500)
-      { stock:'C',    sector:'Financials',       entry_price:65,   exit_price:72,   qty:100, cat:'Short Sell',    date:'2025-09-29', entryT:'09:30' }, // REVENGE, short loss (-700) WORST
-      { stock:'CVX',  sector:'Energy',           entry_price:150,  exit_price:162,  qty:40,  cat:'Swing Trade',   date:'2025-10-10', entryT:'09:30' }, // REVENGE (+480)
-      { stock:'XOM',  sector:'Energy',           entry_price:105,  exit_price:128,  qty:60,  cat:'Long Position', date:'2025-10-20', entryT:'09:30' }, // CLEAN (+1380) BEST
-      { stock:'LLY',  sector:'Healthcare',       entry_price:880,  exit_price:905,  qty:15,  cat:'Day Trade',     date:'2025-11-03', entryT:'09:30' }, // CLEAN (+375)
-      { stock:'PFE',  sector:'Healthcare',       entry_price:30,   exit_price:28.5, qty:300, cat:'Day Trade',     date:'2025-11-03', entryT:'13:15' }, // EUPHORIA + FOMO (-450, same day as LLY)
-      { stock:'KO',   sector:'Consumer Staples', entry_price:60,   exit_price:64,   qty:100, cat:'Swing Trade',   date:'2025-11-14', entryT:'09:30' }, // REVENGE (+400)
-      { stock:'NKE',  sector:'Consumer Disc',    entry_price:78,   exit_price:82,   qty:60,  cat:'Day Trade',     date:'2025-11-25', entryT:'09:30' }, // CLEAN (+240)
-      { stock:'SBUX', sector:'Consumer Disc',    entry_price:95,   exit_price:91,   qty:80,  cat:'Day Trade',     date:'2025-11-25', entryT:'14:00' }, // EUPHORIA + FOMO (-320, same day as NKE)
-      { stock:'GLD',  sector:'ETF',              entry_price:190,  exit_price:182,  qty:50,  cat:'Short Sell',    date:'2025-12-05', entryT:'09:30' }, // REVENGE, short win (+400)
+      { stock:'AAPL',  sector:'Technology',       entry_price:180, exit_price:187,  qty:50,  cat:'Day Trade',     date:'2025-05-05', entryT:'09:35' }, // W
+      { stock:'MSFT',  sector:'Technology',       entry_price:410, exit_price:402,  qty:20,  cat:'Day Trade',     date:'2025-05-05', entryT:'13:20' }, // F,D  -160
+      { stock:'NVDA',  sector:'Technology',       entry_price:120, exit_price:127,  qty:80,  cat:'Day Trade',     date:'2025-05-06', entryT:'09:40' }, // W
+      { stock:'AMD',   sector:'Technology',       entry_price:140, exit_price:135,  qty:40,  cat:'Day Trade',     date:'2025-05-06', entryT:'14:05' }, // F,D  -200
+      { stock:'INTC',  sector:'Technology',       entry_price:35,  exit_price:31,   qty:140, cat:'Day Trade',     date:'2025-05-06', entryT:'15:10' }, // T,D  -560
+      { stock:'JPM',   sector:'Financials',       entry_price:200, exit_price:214,  qty:25,  cat:'Swing Trade',   date:'2025-05-20', entryT:'09:30' }, // W
+      { stock:'BAC',   sector:'Financials',       entry_price:38,  exit_price:36,   qty:120, cat:'Day Trade',     date:'2025-05-20', entryT:'11:15' }, // F,D  -240
+      { stock:'C',     sector:'Financials',       entry_price:65,  exit_price:57,   qty:80,  cat:'Day Trade',     date:'2025-05-20', entryT:'14:40' }, // T,D  -640
+      { stock:'XOM',   sector:'Energy',           entry_price:100, exit_price:122,  qty:60,  cat:'Long Position', date:'2025-06-02', entryT:'09:30' }, // W  +1320 (best)
+      { stock:'CVX',   sector:'Energy',           entry_price:150, exit_price:144,  qty:40,  cat:'Swing Trade',   date:'2025-06-02', entryT:'12:50' }, // F  -240
+      { stock:'COP',   sector:'Energy',           entry_price:110, exit_price:102,  qty:65,  cat:'Swing Trade',   date:'2025-06-02', entryT:'15:00' }, // T  -520
+      { stock:'LLY',   sector:'Healthcare',       entry_price:880, exit_price:905,  qty:10,  cat:'Day Trade',     date:'2025-06-11', entryT:'09:45' }, // W
+      { stock:'PFE',   sector:'Healthcare',       entry_price:30,  exit_price:28,   qty:150, cat:'Day Trade',     date:'2025-06-11', entryT:'13:30' }, // F,D  -300
+      { stock:'MRK',   sector:'Healthcare',       entry_price:110, exit_price:100,  qty:60,  cat:'Day Trade',     date:'2025-06-11', entryT:'15:05' }, // T,D  -600
+      { stock:'KO',    sector:'Consumer Staples', entry_price:60,  exit_price:65,   qty:100, cat:'Swing Trade',   date:'2025-06-20', entryT:'09:30' }, // W
+      { stock:'WMT',   sector:'Consumer Staples', entry_price:70,  exit_price:77,   qty:80,  cat:'Long Position', date:'2025-06-27', entryT:'09:30' }, // W
+      { stock:'DIS',   sector:'Communication',    entry_price:95,  exit_price:99,   qty:70,  cat:'Day Trade',     date:'2025-07-01', entryT:'09:50' }, // W
+      { stock:'NFLX',  sector:'Communication',    entry_price:480, exit_price:470,  qty:15,  cat:'Day Trade',     date:'2025-07-01', entryT:'13:10' }, // F,D  -150
+      { stock:'GOOGL', sector:'Communication',    entry_price:140, exit_price:136,  qty:120, cat:'Day Trade',     date:'2025-07-01', entryT:'15:15' }, // T,D  -480
+      { stock:'BA',    sector:'Industrials',      entry_price:180, exit_price:196,  qty:30,  cat:'Swing Trade',   date:'2025-07-10', entryT:'09:30' }, // W
+      { stock:'CAT',   sector:'Industrials',      entry_price:320, exit_price:314,  qty:30,  cat:'Day Trade',     date:'2025-07-10', entryT:'13:45' }, // F,D  -180
+      { stock:'F',     sector:'Consumer Disc',    entry_price:12,  exit_price:10.6, qty:400, cat:'Day Trade',     date:'2025-07-18', entryT:'10:20' }, // T,D  -560
+      { stock:'GM',    sector:'Consumer Disc',    entry_price:45,  exit_price:40,   qty:100, cat:'Day Trade',     date:'2025-07-25', entryT:'10:05' }, // T,D  -500
+      { stock:'GLD',   sector:'ETF',              entry_price:190, exit_price:182,  qty:50,  cat:'Short Sell',    date:'2025-08-01', entryT:'09:30' }, // W  +400 (short win)
+      { stock:'SLV',   sector:'ETF',              entry_price:22,  exit_price:24,   qty:300, cat:'Short Sell',    date:'2025-08-01', entryT:'13:00' }, // F  -600 (short loss, same day)
+      { stock:'QCOM',  sector:'Technology',       entry_price:160, exit_price:175,  qty:40,  cat:'Swing Trade',   date:'2025-08-15', entryT:'09:30' }, // W  +600
     ];
 
     // Watchlist — tickers Jack is eyeing but hasn't traded yet
