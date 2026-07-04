@@ -137,6 +137,15 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 
 ---
 
+## Phase 18 — Nav Polish & Richer Demo
+
+- [x] **T49** — Reorder nav to workflow order (Dashboard / Watchlist / +Log Trade / Logout); make +Log Trade a filled CTA, soften active-tab style
+- [x] **T50** — Color-code nav: Watchlist active pill in orange, Logout persistently red
+- [x] **T51** — Expand Bearded Jack to a 26-trade portfolio engineered to populate the metrics (15/26 demonstrate a Composure / FOMO / Tilt relation)
+- [x] **T52** — Update `PRD.md` + `README.md` to reflect the 26-trade demo portfolio
+
+---
+
 ## Completion Gate
 
 All tasks checked + all commits pushed + Definition of Done verified = project complete.

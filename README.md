@@ -129,7 +129,7 @@ const FINNHUB_API_KEY        = 'your-finnhub-api-key';
 
 ## Seeding the Demo Account
 
-`seed-jack.html` is a one-off utility page that creates the demo user `jack@alist.demo` ("Bearded Jack, Amateur Investor") and inserts a **16-trade portfolio engineered to exercise every dashboard feature** — all five behavioral tags, all four order types, a clear best/worst, FOMO pairs, and a volatile-but-rising P&L curve. It also seeds a **6-ticker watchlist** (AMZN, TSLA, META, PLTR, COIN, DIS). Open it once in a browser (with a valid `config.js` present) and click **Run Seeder**; it wipes any existing trades *and* watchlist first, so re-running always yields the exact same demo. Afterwards the "Demo login: Bearded Jack, Amateur Investor" button on the main page logs straight in.
+`seed-jack.html` is a one-off utility page that creates the demo user `jack@alist.demo` ("Bearded Jack, Amateur Investor") and inserts a **26-trade portfolio engineered to populate the behavioral metrics** — 15 of the 26 trades demonstrate a relation: panic day-trade exits (Composure ≈25), same-day chaser losses (FOMO Tax ≈-$2,070), and escalating loss-after-loss tilts (Tilt ≈1.4×), across all four order types and 9 sectors. It also seeds a **6-ticker watchlist** (AMZN, TSLA, META, PLTR, COIN, DIS). Open it once in a browser (with a valid `config.js` present) and click **Run Seeder**; it wipes any existing trades *and* watchlist first, so re-running always yields the exact same demo. Afterwards the "Demo login: Bearded Jack, Amateur Investor" button on the main page logs straight in.
 
 > The watchlist seeding needs the `watchlist` collection to exist (see step 6 above); if it's missing, the seeder skips it gracefully and still seeds the trades.
 
