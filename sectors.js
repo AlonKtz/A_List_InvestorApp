@@ -1,4 +1,4 @@
-// S&P 500 + NASDAQ 100 + Russell 2000 popular names + ETFs + top crypto + major forex pairs + other US-listed stocks
+// S&P 500 + NASDAQ 100 + Russell 2000 popular names + ETFs + other US-listed stocks
 // For any ticker NOT found here, app.js falls back to Finnhub /stock/profile2
 const SECTOR_MAP = {
 
@@ -408,13 +408,5 @@ const SECTOR_MAP = {
   IWO:'ETF',   IWP:'ETF',  IWV:'ETF',  ITOT:'ETF', IUSV:'ETF',
   IUSG:'ETF',  IUSB:'ETF', IAU:'ETF',  SGOL:'ETF', PHYS:'ETF',
   PSLV:'ETF',  CEF:'ETF',  SIVR:'ETF', PPLT:'ETF', PLTM:'ETF',
-
-  // ── Crypto ──
-  BTCUSD:'Crypto', ETHUSD:'Crypto',
-
-  // ── Currency (top 10 most-traded forex pairs) ──
-  EURUSD:'Currency', USDJPY:'Currency', GBPUSD:'Currency', USDCHF:'Currency',
-  AUDUSD:'Currency', USDCAD:'Currency', NZDUSD:'Currency', EURJPY:'Currency',
-  GBPJPY:'Currency', EURGBP:'Currency',
 
 };
