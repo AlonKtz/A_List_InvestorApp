@@ -20,7 +20,7 @@
 </head>
 <body>
   <h1>Seed Bearded Jack's Demo Account</h1>
-  <p>Creates the demo user "Bearded Jack, Amateur Investor" and populates a portfolio engineered to exercise every app feature. Re-running wipes his existing trades first, so the result is always exactly these 16 trades.</p>
+  <p>Creates the demo user "Bearded Jack, Amateur Investor" and populates a portfolio engineered to exercise every app feature, plus a 6-ticker watchlist. Re-running wipes his existing trades and watchlist first, so the result is always the same clean demo.</p>
   <button id="run">▶ Run Seeder</button>
   <div id="log"></div>
 
@@ -69,6 +69,16 @@
       { stock:'NKE',  sector:'Consumer Disc',    entry_price:78,   exit_price:82,   qty:60,  cat:'Day Trade',     date:'2025-11-25', entryT:'09:30' }, // CLEAN (+240)
       { stock:'SBUX', sector:'Consumer Disc',    entry_price:95,   exit_price:91,   qty:80,  cat:'Day Trade',     date:'2025-11-25', entryT:'14:00' }, // EUPHORIA + FOMO (-320, same day as NKE)
       { stock:'GLD',  sector:'ETF',              entry_price:190,  exit_price:182,  qty:50,  cat:'Short Sell',    date:'2025-12-05', entryT:'09:30' }, // REVENGE, short win (+400)
+    ];
+
+    // Watchlist — tickers Jack is eyeing but hasn't traded yet
+    const WATCHLIST = [
+      { symbol: 'AMZN', sector: 'Consumer Disc' },
+      { symbol: 'TSLA', sector: 'Consumer Disc' },
+      { symbol: 'META', sector: 'Communication' },
+      { symbol: 'PLTR', sector: 'Technology' },
+      { symbol: 'COIN', sector: 'Financials' },
+      { symbol: 'DIS',  sector: 'Communication' },
     ];
 
     const holdDays = { 'Day Trade': 0, 'Short Sell': 0, 'Swing Trade': 5, 'Long Position': 30 };
@@ -170,6 +180,28 @@
           log(`  ✗ ${t.stock}: ${e.message}`, 'err');
           fail++;
         }
+      }
+
+      // 4. Wipe + seed the demo watchlist
+      log('\nClearing + seeding watchlist…');
+      try {
+        const existingW = await databases.listDocuments(
+          APPWRITE_DATABASE_ID, APPWRITE_WATCHLIST_COLLECTION_ID, [Query.limit(100)]
+        );
+        for (const doc of existingW.documents) {
+          await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_WATCHLIST_COLLECTION_ID, doc.$id);
+        }
+        for (const w of WATCHLIST) {
+          await databases.createDocument(
+            APPWRITE_DATABASE_ID, APPWRITE_WATCHLIST_COLLECTION_ID, ID.unique(),
+            { symbol: w.symbol, sector: w.sector },
+            [Permission.read(Role.user(userId)), Permission.write(Role.user(userId))]
+          );
+          log(`  ✓ watch ${w.symbol}`, 'ok');
+        }
+        log(`✓ Watchlist: ${WATCHLIST.length} tickers seeded`, 'ok');
+      } catch (e) {
+        log(`(watchlist skipped: ${e.message} — create the 'watchlist' collection in Appwrite first)`, 'inf');
       }
 
       log('');
