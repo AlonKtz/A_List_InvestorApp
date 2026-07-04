@@ -131,6 +131,9 @@ Each task = one Git commit. Commit message format: `T##: <what changed and why>`
 - [x] **T43** — Hash-based routing (`#/dashboard`, `#/log`) — real shareable URLs per view
 - [x] **T44** — Watchlist feature: new `#/watchlist` view, Appwrite `watchlist` collection (per-user perms), live Finnhub quotes + refresh, sector auto-fill, "Log trade" prefill shortcut
 - [x] **T45** — Sync `PRD.md`, `README.md`, `tasks.md` for routing + watchlist (collection, user story, setup step, config field)
+- [x] **T46** — Seed Bearded Jack a 6-ticker watchlist; seeder wipes old watchlist on re-run, skips gracefully if collection missing
+- [x] **T47** — Show "Last refreshed: <time>" next to the Watchlist refresh button after prices update
+- [x] **T48** — Note the demo watchlist in `PRD.md` + `README.md`
 
 ---
 
