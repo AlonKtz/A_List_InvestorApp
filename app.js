@@ -110,31 +110,40 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   location.reload();
 });
 
-// ── Nav tab switching ──
-const navDashboard  = document.getElementById('nav-dashboard');
-const navLog        = document.getElementById('nav-log');
-const viewDashboard = document.getElementById('view-dashboard');
-const viewLog       = document.getElementById('view-log');
+// ── Hash routing (multi-view: #/dashboard, #/log) ──
+const ROUTES = {
+  dashboard: { view: 'view-dashboard', nav: 'nav-dashboard', onEnter: () => loadTrades() },
+  log:       { view: 'view-log',       nav: 'nav-log' },
+};
 
-navDashboard.addEventListener('click', () => {
-  viewDashboard.classList.remove('hidden');
-  viewLog.classList.add('hidden');
-  navDashboard.classList.add('active');    navDashboard.classList.remove('inactive');
-  navLog.classList.remove('active');       navLog.classList.add('inactive');
-});
+function router() {
+  const key   = location.hash.replace(/^#\/?/, '') || 'dashboard';
+  const route = ROUTES[key] || ROUTES.dashboard;
 
-navLog.addEventListener('click', () => {
-  viewLog.classList.remove('hidden');
-  viewDashboard.classList.add('hidden');
-  navLog.classList.add('active');          navLog.classList.remove('inactive');
-  navDashboard.classList.remove('active'); navDashboard.classList.add('inactive');
+  Object.values(ROUTES).forEach(r => {
+    document.getElementById(r.view).classList.add('hidden');
+    const nav = document.getElementById(r.nav);
+    nav.classList.remove('active'); nav.classList.add('inactive');
+  });
+
+  document.getElementById(route.view).classList.remove('hidden');
+  const activeNav = document.getElementById(route.nav);
+  activeNav.classList.add('active'); activeNav.classList.remove('inactive');
+
+  if (route.onEnter) route.onEnter();
+}
+
+Object.keys(ROUTES).forEach(key => {
+  document.getElementById(ROUTES[key].nav)
+    .addEventListener('click', () => { location.hash = `#/${key}`; });
 });
+window.addEventListener('hashchange', router);
 
 // ── Show / hide screens ──
 function showApp() {
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('app-shell').classList.remove('hidden');
-  loadTrades();
+  router();
 }
 
 // ── Session check on load ──
@@ -282,8 +291,7 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
     badge.classList.remove('filled');
     btn.textContent = '✓ Logged!';
     setTimeout(() => { btn.textContent = 'Log Trade'; }, 1500);
-    navDashboard.click();
-    loadTrades();
+    location.hash = '#/dashboard';
   } catch (err) {
     errEl.textContent = err.message;
     errEl.classList.remove('hidden');
