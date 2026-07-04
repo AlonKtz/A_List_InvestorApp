@@ -11,6 +11,8 @@
   --emerald-600: #059669;
   --cyan-400:    #22d3ee;
   --cyan-500:    #06b6d4;
+  --orange-400:  #fb923c;
+  --orange-500:  #f97316;
 
   --gain:    #34d399;
   --loss:    #f87171;
@@ -183,6 +185,12 @@ body {
 }
 .btn-nav.inactive:hover { background: var(--glass-fill-soft); color: var(--text-primary); }
 
+/* Orange accent variant (Watchlist) — same pill mechanic as Dashboard, orange when active */
+.btn-nav.nav-orange.active {
+  color: var(--orange-400);
+  box-shadow: inset 0 0 0 1px rgba(249,115,22,0.45);
+}
+
 /* Primary action tab — always a filled CTA, independent of active state */
 .btn-nav-cta {
   padding: 7px 16px; font-size: 13px; font-weight: 700;
@@ -200,10 +208,10 @@ body {
   padding: 7px 14px; font-size: 13px; font-weight: 700;
   border-radius: var(--radius-md); cursor: pointer;
   font-family: inherit; border: none;
-  background: transparent; color: var(--text-muted);
+  background: transparent; color: var(--loss);
   transition: all var(--dur-hover) var(--ease-out-soft);
 }
-.btn-danger-nav:hover { color: var(--loss); background: rgba(248,113,113,0.08); }
+.btn-danger-nav:hover { color: #fff; background: rgba(248,113,113,0.20); }
 
 .btn-fetch {
   padding: 6px 12px; font-size: 12px; font-weight: 700;
