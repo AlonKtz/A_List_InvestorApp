@@ -738,6 +738,12 @@ async function refreshWatchlistPrices() {
       priceEl.textContent = 'err';
     }
   }));
+
+  const stamp = document.getElementById('watch-last-refreshed');
+  if (stamp && rows.length) {
+    const now = new Date().toLocaleTimeString('he-IL', { timeZone: 'Asia/Jerusalem', hour12: false });
+    stamp.textContent = `Last refreshed: ${now}`;
+  }
 }
 
 // Sector auto-fill for the watchlist ticker input

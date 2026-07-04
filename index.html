@@ -280,7 +280,10 @@
     <div id="view-watchlist" class="hidden flex-1 p-6 space-y-4">
       <div class="flex items-center justify-between flex-wrap gap-3">
         <h2 class="wordmark" style="font-size:28px;margin:0">Watchlist</h2>
-        <button id="btn-refresh-watchlist" class="btn-fetch">↻ Refresh Prices</button>
+        <div class="flex items-center gap-3 flex-wrap">
+          <span id="watch-last-refreshed" style="color:var(--text-faint);font-size:12px"></span>
+          <button id="btn-refresh-watchlist" class="btn-fetch">↻ Refresh Prices</button>
+        </div>
       </div>
 
       <!-- Add ticker -->
