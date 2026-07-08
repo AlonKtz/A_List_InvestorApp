@@ -429,7 +429,8 @@ const CAT_CLASS = {
 function tagTrade(t, i, chrono) {
   const pnl = x => calcPnl(x);
   if (i >= 3 && chrono.slice(i - 3, i).every(x => x.sector === t.sector)) return 'TUNNEL_VISION';
-  if (i > 0 && pnl(chrono[i - 1]) < 0) return 'REVENGE_TRADE';
+  // Revenge = you won it back — a profitable trade right after a loss
+  if (i > 0 && pnl(chrono[i - 1]) < 0 && pnl(t) > 0) return 'REVENGE_TRADE';
   if (i > 0 && pnl(chrono[i - 1]) > 0 &&
       chrono[i - 1].entry_time?.slice(0, 10) === t.entry_time?.slice(0, 10)) return 'EUPHORIA_TRADE';
   if (t.order_category === 'Day Trade' && pnl(t) < 0) return 'PANIC_EXIT';
