@@ -305,6 +305,15 @@ document.getElementById('form-trade').addEventListener('submit', async (e) => {
 // ── Fetch + render ──
 let allTrades = [];
 
+// True chronological order = by actual trade date (entry_time), tie-break by log time.
+// Metrics, tags, and "recent" all depend on this reflecting the real trade sequence.
+function toChrono(list) {
+  return [...list].sort((a, b) =>
+    (new Date(a.entry_time) - new Date(b.entry_time)) ||
+    (new Date(a.$createdAt) - new Date(b.$createdAt))
+  );
+}
+
 async function loadTrades() {
   const loading = document.getElementById('dashboard-loading');
   const error   = document.getElementById('dashboard-error');
@@ -321,9 +330,9 @@ async function loadTrades() {
       [Query.orderDesc('$createdAt'), Query.limit(200)]
     );
     allTrades = res.documents;
-    const chrono = [...allTrades].sort((a, b) => new Date(a.$createdAt) - new Date(b.$createdAt));
+    const chrono = toChrono(allTrades);
     const tagMap = buildTagMap(chrono);
-    renderTable(allTrades, tagMap);
+    renderTable([...chrono].reverse(), tagMap);   // table: newest trade date first
     computeMetrics(chrono);
     renderBestWorst(chrono);
     renderRecentTrades(chrono, tagMap);
@@ -660,9 +669,9 @@ document.getElementById('trades-table-body').addEventListener('click', async (e)
   try {
     await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID, id);
     allTrades = allTrades.filter(t => t.$id !== id);
-    const chrono = [...allTrades].sort((a, b) => new Date(a.$createdAt) - new Date(b.$createdAt));
+    const chrono = toChrono(allTrades);
     const tagMap = buildTagMap(chrono);
-    renderTable(allTrades, tagMap);
+    renderTable([...chrono].reverse(), tagMap);   // table: newest trade date first
     computeMetrics(chrono);
     renderBestWorst(chrono);
     renderRecentTrades(chrono, tagMap);
