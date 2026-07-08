@@ -416,6 +416,9 @@ const TAG_META = {
   EUPHORIA_TRADE: { cls: 'tag-EUPHORIA_TRADE', label: 'Euphoria',      color: '#eab308' },
   REVENGE_TRADE:  { cls: 'tag-REVENGE_TRADE',  label: 'Revenge',       color: '#f97316' },
   TUNNEL_VISION:  { cls: 'tag-TUNNEL_VISION',  label: 'Tunnel Vision', color: '#a855f7' },
+  OVERSIZED_BET:  { cls: 'tag-OVERSIZED_BET',  label: 'Oversized',     color: '#f43f5e' },
+  DIAMOND_HANDS:  { cls: 'tag-DIAMOND_HANDS',  label: 'Diamond Hands', color: '#22d3ee' },
+  COLD_STREAK:    { cls: 'tag-COLD_STREAK',    label: 'Cold Streak',   color: '#60a5fa' },
   CLEAN:          { cls: 'tag-CLEAN',          label: 'Clean',         color: '#059669' },
 };
 
@@ -426,20 +429,31 @@ const CAT_CLASS = {
   'Short Sell':    'cat-short',
 };
 
-function tagTrade(t, i, chrono) {
+function tagTrade(t, i, chrono, medNotional = 0) {
   const pnl = x => calcPnl(x);
+  const notional = Math.abs(parseFloat(t.entry_price) * (t.quantity || 1));
   if (i >= 3 && chrono.slice(i - 3, i).every(x => x.sector === t.sector)) return 'TUNNEL_VISION';
+  // Oversized = notional at least 2x your median trade size
+  if (medNotional > 0 && notional >= 2 * medNotional) return 'OVERSIZED_BET';
+  // Cold streak = the 3rd (or later) loss in an unbroken run of losses
+  if (i >= 2 && pnl(t) < 0 && pnl(chrono[i - 1]) < 0 && pnl(chrono[i - 2]) < 0) return 'COLD_STREAK';
   // Revenge = you won it back — a profitable trade right after a loss
   if (i > 0 && pnl(chrono[i - 1]) < 0 && pnl(t) > 0) return 'REVENGE_TRADE';
   if (i > 0 && pnl(chrono[i - 1]) > 0 &&
       chrono[i - 1].entry_time?.slice(0, 10) === t.entry_time?.slice(0, 10)) return 'EUPHORIA_TRADE';
+  // Diamond hands = held a Long Position through to a profit
+  if (t.order_category === 'Long Position' && pnl(t) > 0) return 'DIAMOND_HANDS';
   if (t.order_category === 'Day Trade' && pnl(t) < 0) return 'PANIC_EXIT';
   return 'CLEAN';
 }
 
 function buildTagMap(chrono) {
+  const notionals = chrono
+    .map(t => Math.abs(parseFloat(t.entry_price) * (t.quantity || 1)))
+    .sort((a, b) => a - b);
+  const medNotional = notionals.length ? notionals[Math.floor(notionals.length / 2)] : 0;
   const map = {};
-  chrono.forEach((t, i) => { map[t.$id] = tagTrade(t, i, chrono); });
+  chrono.forEach((t, i) => { map[t.$id] = tagTrade(t, i, chrono, medNotional); });
   return map;
 }
 
@@ -605,10 +619,11 @@ function renderCharts(chrono) {
     }
   });
 
-  const tagOrder  = ['CLEAN', 'PANIC_EXIT', 'EUPHORIA_TRADE', 'REVENGE_TRADE', 'TUNNEL_VISION'];
-  const tagLabels = ['Clean', 'Panic Exit', 'Euphoria', 'Revenge', 'Tunnel Vision'];
-  const tagColors = ['#059669', '#ef4444', '#eab308', '#f97316', '#a855f7'];
   const pieTagMap = buildTagMap(chrono);
+  // Only show tags that actually occur, derived from TAG_META so new tags appear automatically
+  const tagOrder  = Object.keys(TAG_META).filter(tag => chrono.some(t => pieTagMap[t.$id] === tag));
+  const tagLabels = tagOrder.map(tag => TAG_META[tag].label);
+  const tagColors = tagOrder.map(tag => TAG_META[tag].color);
   const tagCounts = tagOrder.map(tag => chrono.filter(t => pieTagMap[t.$id] === tag).length);
 
   if (tagsChart) tagsChart.destroy();

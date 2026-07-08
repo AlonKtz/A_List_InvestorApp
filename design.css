@@ -23,6 +23,9 @@
   --tag-revenge:  #f97316;
   --tag-tunnel:   #a855f7;
   --tag-clean:    #059669;
+  --tag-oversized: #f43f5e;
+  --tag-diamond:   #22d3ee;
+  --tag-cold:      #60a5fa;
 
   --glass-fill:        rgba(15, 23, 42, 0.55);
   --glass-fill-strong: rgba(15, 23, 42, 0.72);
@@ -332,6 +335,9 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
 .tag-REVENGE_TRADE  { background: var(--tag-revenge); }
 .tag-TUNNEL_VISION  { background: var(--tag-tunnel); }
 .tag-CLEAN          { background: var(--tag-clean); }
+.tag-OVERSIZED_BET  { background: var(--tag-oversized); }
+.tag-DIAMOND_HANDS  { background: var(--tag-diamond); color: #053345; }
+.tag-COLD_STREAK    { background: var(--tag-cold); color: #06214d; }
 
 /* ── Category badges ── */
 .cat-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; }
