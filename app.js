@@ -464,8 +464,8 @@ function renderBestWorst(chrono) {
     </div>`;
 
   el.innerHTML =
-    row('🏆', esc(best.stock),  bp, 'var(--gain)', '+', bd) +
-    row('💀', esc(worst.stock), wp, 'var(--loss)', '-', wd);
+    row('🏆', esc(best.stock),  bp, bp >= 0 ? 'var(--gain)' : 'var(--loss)', bp >= 0 ? '+' : '-', bd) +
+    row('💀', esc(worst.stock), wp, wp >= 0 ? 'var(--gain)' : 'var(--loss)', wp >= 0 ? '+' : '-', wd);
 }
 
 // ── Recent 3 Trades ──
